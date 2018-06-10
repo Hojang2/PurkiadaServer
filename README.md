@@ -1,0 +1,2 @@
+# PurkyadaServer2018
+Simulator_of_Linux_server_for_school_competition
