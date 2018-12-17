@@ -1,157 +1,138 @@
-import socket
-import time
-#-*- encoding: utf-8 -*-
-actions = ["ls","ssh","help","listen","exit","cd","disconnect", "read","bcad"]
+from socket import socket, AF_INET, SOCK_STREAM
+from json import dumps
+# -*- encoding: utf-8 -*-
 
-def showHelp():
-    print("------------------------------------------------")
-    print("for help write \"help\"")
-    print(" ssh [ip]:[port]\" - connect to server")
-    print(" listen [ip]:[port]\" - listen to server")
-    print(" dir - show you content of folder")
-    print(" cd [directory name] - change working directory")
-    print(" cd ..  - go to the upper folder")
-    print(" cd /  - go to the start")
-    #print(" rm - rename something")
-    print(" bcad [password]  - will make you admin")
-    print(" disconnect - say \"bye!\" to server")
-    print(" exit - close this application")
-    print("------------------------------------------------")
-
-showHelp()
-connect = False
-print("now let's start write action")
-conected=False
-path = ""
-soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-while True:
-    action = input(path+"~$ ")
-    action = action.split(" ")
-    if len(action) < 2 and (action[0] == "cd" or action[0] == "read" or action[0] == "bcad"):
-        print("mising argument")
-        action=["None","None"]
-    if connect == True and (action[0] == "ssh" or action[0] == "listen"):
-        print("You can't connect when you are connected to server")
-    if  connect != True:
-        soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if action[0] == "ssh":
-            if action[1] != "193.165.214.38:9601":
-                try:
-                    adr, port = action[1].split(":")
-                    soc.connect((adr,int(port)))
-                    connect = True
-                    print("new connection with "+adr+" on port: "+str(port))
-                    print(soc.recv(4024).decode("utf8"))
-                    pom = soc.recv(1024).decode("utf8")
-                    for i in range(1):
-                        user_name = input("username: ")
-                        password = input("password: ")
-                        soc.send("{0}-{1}".format(user_name,password).encode())
-                        answ = soc.recv(1024).decode("utf8")
-                        if answ == "True":
-                            print("Welcome user " + user_name)
-                            conected = True
-                            path = pom
-                        else:
-                            connect = False
-                            print("Invalid username or password")
-                except:
-                    print("wrong adress or port")
+manual = {
+        "ls": "  Prints all files and directories in current directory",
+        "help": "  Shows this help",
+        "ssh": """  Secure Shell - connects you to target server 
+                    usage ssh <target_ip>:<target_port>""",
+        "cd": """   Change working directory 
+                    usage: cd <target>  parametrs: 
+                        cd /            - moves you to root directory
+                        cd ..            - moves you to directory above 
+                        cd <target_directory>    - moves you to target directory
+                    errors:  DirectoryDoesNotExist - target directory doesn't exist""",
+        "rename": """ change name of file or directory
+            usage: rename <input_file.txt> <output_file.txt>""",
+        "su": " Change your user to root",
+        "exit": """ If you are connected to server you will be disconnect,
+                else close the application""",
+        "read": "   Read the content of the file"
+}
 
 
-        if action[0] == "listen":
-            if action[1] != "193.165.214.38:9600":
-                try:
-                    adr, port = action[1].split(":")
-                    soc.connect((adr,int(port)))
-                    print("server found, listening on port:"+str(port)+"\n")
-                    b_data=soc.recv(2048).decode("utf8")
-                    print(b_data)
-                except:
-                    print("host not found")
-    if action[0] == "help":
-        showHelp()
-    if action[0] == "exit" and connect == True:
-        path = ""
-        connect = False
-        conected = False
-        soc.send("disconnect".encode())
-        soc.close()
-        exit()
+class Client:
 
-    if action[0] == "exit" and connect == False:
-        exit()
+    def __init__(self, commands):
+        self.commands = commands
+        self.default_path = "/home/guest"
+        self.path = self.default_path
+        self.connected = False
+        self.address = ""
+        self.port = 0
+        self.starter = "{}@{}:{}$"
+        self.args = []
+        self.action = ""
+        self.name = "guest"
+        self.__password = ""
+        self.hostname = "linux"
+        self.sock = None
 
-    if action[0] == "disconnect" and connect == True:
-        path = ""
-        connect=False
-        conected = False
-        soc.send(action[0].encode())
-        soc.close()
-    if action[0] not in actions:
-        print("unknown command")
+    def sock_init(self):
 
-    if connect and conected:
-        if action[0] == "ls":
-            soc.send("ls".encode())
+        self.sock = socket(AF_INET, SOCK_STREAM)
+        return True
 
-            permission = soc.recv(1024).decode("utf8")
-            if permission == "True":
-                data=soc.recv(1024).decode("utf8")
-                data = data.split(" ")
-                for i in data:
-                    if i != " ":
-                        print(i)
-            elif permission == "False":
-                print("Permission denied")
-        if action[0] == "cd":
-            if len(action[1]) < 500:
-                soc.send((action[0]+" "+action[1]).encode())
+    def run(self):
+        while True:
 
-                permission = soc.recv(1024).decode("utf8")
-                if permission == "True":
-                    data = soc.recv(1024).decode("utf8")
-                    if data != "None":
-                        path=data
-                    else:
-                        print(data)
-                elif permission == "False":
-                    print("Permission denied")
-                    data = soc.recv(1024).decode("utf8")
-            else:
-                print("directory name is too long")
-        if action[0] == "read":
-            if len(action[1]) < 500:
-                soc.send((action[0]+" "+action[1]).encode())
+            self.action = input(self.starter.format(self.name, self.hostname, self.path))
+            self.action, *self.args = self.action.split(" ")
 
-                permission = soc.recv(1024).decode("utf8")
-                data = soc.recv(1024).decode("utf8")
-                if permission == "True":
-                    print(data)
+            if self.action in self.commands.keys():
+                if self.connected:
+                    self.run_connected()
                 else:
-                    print("Permission denied")
+                    self.run_local()
             else:
-                print("file name is too long")
-        """
-        if action[0] == "rm":
-            soc.send("rm".encode())
+                print("Command not found")
 
-            permission = soc.recv(1024).decode("utf8")
-            if permission == "True":
-                print(soc.recv(1024).decode("utf8"))
-            else:
-                data = soc.recv(1024).decode("utf8")
-                print("Permission denied")
-        """
-        if action[0] == "bcad":
-            soc.send((action[0] + " " + action[1]).encode())
-            permission = soc.recv(1024).decode("utf8")
-            data = soc.recv(1024).decode("utf8")
-            if permission == "True":
-                if data == "True":
-                    print("Now you are admin")
-                else:
-                    print("Wrong password")
-            else:
+    def connect(self):
+        if self.sock_init():
+            self.address, self.port = self.action, self.args[0]
+            try:
+                self.sock.connect(self.address, self.port)
+                self.connected = True
+                print("new connection with {} on port: {}".format(self.address,
+                                                                  self.port))
+            except:
 
-                print("Permission denied")
+                print("Target {}:{} address and port doesn't exists")
+
+            self.run_connected()
+
+        else:
+            print("Problem with socket initialization")
+
+    def validate(self):
+        self.name = input("username: ")
+        self.__password = input("password: ")
+        self.sock.send(dumps({"name": self.name, "password": self.__password}).decode())
+        answer = self.sock.recv(1024).decode("utf8")
+        if answer == "True":
+            self.connected = True
+            self.path = self.sock.recv(1024).decode("utf8")
+        else:
+            print("Invalid username or password")
+
+    def run_local(self):
+        if self.action == "ssh":
+            self.connect()
+
+        if self.action == "exit":
+            exit()
+
+    def show_help(self):
+        for key in self.commands:
+            print(key + "\t - " + self.commands[key])
+
+    def help_command(self, command):
+        print(command + "\t - " + self.commands[command])
+
+    def run_connected(self):
+
+        if self.action == "ssh":
+
+            print(self.sock.recv(4024).decode("utf8"))
+
+            for _ in range(1):
+                self.validate()
+
+        elif self.action == "help":
+            self.show_help()
+
+        elif self.action == "exit":
+            self.path = self.default_path
+            self.connected = False
+            self.sock.send(self.validate_data("disconnect"))
+            self.sock.close()
+
+        else:
+            self.validate_data(self.action)
+            self.validate_data(dumps(self.args))
+
+    def validate_data(self, data: str) -> bool:
+
+        try:
+            length = len(self.action)
+            self.sock.send(str(length).encode())
+            assert (self.sock.recv().decode("utf-8") == length), "error with sending length"
+            self.sock.send(data.encode())
+            assert (self.sock.recv().decode("utf-8") == "True"), "Problem with answer from server"
+            time = self.sock.recv().decode("utf-8")
+            print("Data transfer complete in {}".format(time))
+            return True
+        except AssertionError as e:
+            print(e)
+            return False
