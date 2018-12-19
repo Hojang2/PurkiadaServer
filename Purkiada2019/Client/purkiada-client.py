@@ -1,4 +1,4 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, gethostname
 from json import dumps
 # -*- encoding: utf-8 -*-
 
@@ -6,7 +6,7 @@ manual = {
         "ls": "  Prints all files and directories in current directory",
         "help": "  Shows this help",
         "ssh": """  Secure Shell - connects you to target server 
-                    usage ssh <target_ip>:<target_port>""",
+                    usage ssh <username>@<target_ip>:<target_port>""",
         "cd": """   Change working directory 
                     usage: cd <target>  parametrs: 
                         cd /            - moves you to root directory
@@ -26,18 +26,21 @@ class Client:
 
     def __init__(self, commands):
         self.commands = commands
-        self.default_path = "/home/guest"
-        self.path = self.default_path
         self.connected = False
-        self.address = ""
         self.port = 0
         self.starter = "{}@{}:{}$"
         self.args = []
         self.action = ""
-        self.name = "guest"
         self.__password = ""
-        self.hostname = "linux"
         self.sock = None
+
+        # Setting default values
+        self.default_path = "/home/guest"
+        self.path = self.default_path
+        self.default_address = gethostbyname(gethostname())
+        self.address = self.default_address
+        self.default_name = "guest"
+        self.name = self.default_name
 
     def sock_init(self):
 
@@ -47,7 +50,7 @@ class Client:
     def run(self):
         while True:
 
-            self.action = input(self.starter.format(self.name, self.hostname, self.path))
+            self.action = input(self.starter.format(self.name, self.address, self.path))
             self.action, *self.args = self.action.split(" ")
 
             if self.action in self.commands.keys():
@@ -60,9 +63,14 @@ class Client:
 
     def connect(self):
         if self.sock_init():
-            self.address, self.port = self.action, self.args[0]
+            # Syntax of ssh will be 'ssh username@address:port
+            tmp = self.args[0].split("@")
+            self.name = tmp[0]
+            tmp = tmp[1]
+            self.address, self.port = tmp.split(":")
+
             try:
-                self.sock.connect(self.address, self.port)
+                self.sock.connect((self.address, self.port))
                 self.connected = True
                 print("new connection with {} on port: {}".format(self.address,
                                                                   self.port))
@@ -76,9 +84,8 @@ class Client:
             print("Problem with socket initialization")
 
     def validate(self):
-        self.name = input("username: ")
         self.__password = input("password: ")
-        self.sock.send(dumps({"name": self.name, "password": self.__password}).decode())
+        self.sock.send(self.validate_data(dumps({"name": self.name, "password": self.__password}).decode()))
         answer = self.sock.recv(1024).decode("utf8")
         if answer == "True":
             self.connected = True
@@ -114,6 +121,8 @@ class Client:
 
         elif self.action == "exit":
             self.path = self.default_path
+            self.name = self.default_name
+            self.address = self.default_address
             self.connected = False
             self.sock.send(self.validate_data("disconnect"))
             self.sock.close()
