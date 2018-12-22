@@ -9,16 +9,19 @@
 
 class Directory:
 
-    def __init__(self, name: str, permissions: str):
+    def __init__(self, name: str, permissions: str, upper_directory):
         self.name = name
+        self.path = self.name + "/"
         self.type = "directory"
         self.__content = []
         self.permissions = permissions
+        self.upper_directory = upper_directory
 
     def __str__(self) -> str:
         return self.name
 
-    def add(self, new_content: str) -> None:
+    def add(self, new_content) -> None:
+        new_content.path = self.path + new_content.path
         self.__content.append(new_content)
 
     def validate(self, permission: str) -> bool:
@@ -42,7 +45,7 @@ class File:
         self.__content = content
         self.permissions = permissions
 
-    def show_content(self) -> str:
+    def read(self) -> str:
         return self.__content
 
     def __str__(self) -> str:
