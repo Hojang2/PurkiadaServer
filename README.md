@@ -13,4 +13,3 @@ cPanel - web page                 | @lukynmatuska       | 100% | Template and in
 cPanel - web page - add to server | -> @hojang2         | 0%  | -
 Permissions                       | @hojang2            | 0%  | -
 Path logs                         | @hojang2            | 0%  | -
-Server to listening (send binary) | skype: live:dygytal | 0%  | -
