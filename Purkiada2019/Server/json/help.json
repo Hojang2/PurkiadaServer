@@ -1,0 +1,10 @@
+{
+	"ls":"Prints all files and directories in current directory",
+	"help":"Shows this help",
+	"ssh":" Secure Shell - connects you to target server Usage ssh <target_ip>:<target_port>",
+	"cd":"Change working directory  usage: cd <target>  parametrs:  cd / 		- moves you to root directory  cd .. 		- moves you to directory above  cd <somedir> 	- moves you to somedir  errors:  DirectoryDoesNotExist - target directory doesn't exist",
+	"rename":"change name of file or directory  usage: rename <input_file.txt> <output_file.txt>",
+	"su": "Change your user to root",
+	"exit":"If you are connected to server you will be disconnect, else close the application",
+	"read":"Read the content of the file"
+}
