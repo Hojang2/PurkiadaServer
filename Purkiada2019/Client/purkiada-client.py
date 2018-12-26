@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, gethostname
 from json import dumps
+from time import clock
 # -*- encoding: utf-8 -*-
 
 manual = {
@@ -32,9 +33,10 @@ class Client:
         self.args = []
         self.action = ""
         self.__password = ""
-        self.sock = None
+        self.__sock = None
 
         # Setting default values
+        self.data = False
         self.default_path = "/home/guest"
         self.path = self.default_path
         self.default_address = gethostbyname(gethostname())
@@ -44,7 +46,7 @@ class Client:
 
     def sock_init(self):
 
-        self.sock = socket(AF_INET, SOCK_STREAM)
+        self.__sock = socket(AF_INET, SOCK_STREAM)
         return True
 
     def run(self):
@@ -70,7 +72,7 @@ class Client:
             self.address, self.port = tmp.split(":")
 
             try:
-                self.sock.connect((self.address, self.port))
+                self.__sock.connect((self.address, self.port))
                 self.connected = True
                 print("new connection with {} on port: {}".format(self.address,
                                                                   self.port))
@@ -85,11 +87,11 @@ class Client:
 
     def validate(self):
         self.__password = input("password: ")
-        self.sock.send(self.validate_data(dumps({"name": self.name, "password": self.__password}).decode()))
-        answer = self.sock.recv(1024).decode("utf8")
+        self.__sock.send(self.send_data(dumps({"name": self.name, "password": self.__password}).decode()))
+        answer = self.__sock.recv(1024).decode("utf8")
         if answer == "True":
             self.connected = True
-            self.path = self.sock.recv(1024).decode("utf8")
+            self.path = self.__sock.recv(1024).decode("utf8")
         else:
             print("Invalid username or password")
 
@@ -111,7 +113,7 @@ class Client:
 
         if self.action == "ssh":
 
-            print(self.sock.recv(4024).decode("utf8"))
+            print(self.__sock.recv(4024).decode("utf8"))
 
             for _ in range(1):
                 self.validate()
@@ -124,24 +126,38 @@ class Client:
             self.name = self.default_name
             self.address = self.default_address
             self.connected = False
-            self.sock.send(self.validate_data("disconnect"))
-            self.sock.close()
+            self.__sock.send(self.send_data("disconnect"))
+            self.__sock.close()
 
         else:
-            self.validate_data(self.action)
-            self.validate_data(dumps(self.args))
+            self.send_data(self.action)
+            self.send_data(dumps(self.args))
 
-    def validate_data(self, data: str) -> bool:
+    def send_data(self, data: str) -> bool:
 
         try:
             length = len(self.action)
-            self.sock.send(str(length).encode())
-            assert (self.sock.recv().decode("utf-8") == length), "error with sending length"
-            self.sock.send(data.encode())
-            assert (self.sock.recv().decode("utf-8") == "True"), "Problem with answer from server"
-            time = self.sock.recv().decode("utf-8")
-            print("Data transfer complete in {}".format(time))
+            self.__sock.send(str(length).encode())
+            assert (self.__sock.recv().decode("utf-8") == length), "error with sending length"
+            self.__sock.send(data.encode())
+            assert (self.__sock.recv().decode("utf-8") == "True"), "Problem with answer from server"
+            t = self.__sock.recv().decode("utf-8")
+            print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
             print(e)
             return False
+
+    def receive_data(self):
+        length = self.__sock.recv(1024).decode("utf-8")
+        t = clock()
+        self.__sock.send(length.decode())
+        self.data = self.__sock.recv(2048).decode("utf-8")
+
+        if len(self.data) == length:
+            answer = True
+        else:
+            answer = False
+
+        self.__sock.send(str(answer).encode())
+        self.__sock.send(str(t - clock()).encode())

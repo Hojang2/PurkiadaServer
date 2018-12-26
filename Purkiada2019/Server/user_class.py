@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import structures
+from time import clock
 
 
 class User:
@@ -11,6 +12,8 @@ class User:
         self.default_directory = default_directory
         self.path = default_directory.path
         self.connected = False
+        self.__connection = None
+        self.data = False
         self.action = None
         self.argv = None
         self.cwd = default_directory
@@ -80,6 +83,38 @@ class User:
 
             self.do_action()
             print(self.answer)
+
+    def set_connection(self, connection):
+        self.__connection = connection
+
+    def receive_data(self):
+        length = self.__connection.recv(1024).decode("utf-8")
+        t = clock()
+        self.__connection.send(length.decode())
+        self.data = self.__connection.recv(2048).decode("utf-8")
+
+        if len(self.data) == length:
+            answer = True
+        else:
+            answer = False
+
+        self.__connection.send(str(answer).encode())
+        self.__connection.send(str(t - clock()).encode())
+
+    def send_data(self, data: str) -> bool:
+
+        try:
+            length = len(self.action)
+            self.__connection.send(str(length).encode())
+            assert (self.__connection.recv().decode("utf-8") == length), "error with sending length"
+            self.__connection.send(data.encode())
+            assert (self.__connection.recv().decode("utf-8") == "True"), "Problem with answer from server"
+            t = self.__connection.recv().decode("utf-8")
+            print("Data transfer complete in {}".format(t))
+            return True
+        except AssertionError as e:
+            print(e)
+            return False
 
 
 folder_names = ["bin", "boot", "dev", "etc", "home", "lib", "mnt", "opt", "root", "sbin", "tmp",

@@ -74,5 +74,9 @@ class Server:
     def user_space(self, connection):
 
         user = user_class.User()
+        self.users.append(user)
+        user.set_connection(connection)
+
+
 
 
