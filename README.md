@@ -1,15 +1,12 @@
-# PURKIADA SERVER 2018
-## Enterprise education edition
-Úloha č.5 na soutěž naší školy, která se koná pro studenty 9. tříd ZŠ...více info na stránkách soutěže http://purkiada.sspbrno.cz/ .
-
 ## TO-DO LIST:
 
-Action:|User:|Done:|<br />
----|---|---|---
-Binary to string                  | @lukynmatuska       | 80% | Repair PHP error
-some random adventure             | @lukynmatuska       | 0%  | -
-xlsx table to users               | @lukynmatuska       | 80% | Just update table
-cPanel - web page                 | @lukynmatuska       | 100% | Template and interacting completed
-cPanel - web page - add to server | -> @hojang2         | 0%  | -
-Permissions                       | @hojang2            | 0%  | -
-Path logs                         | @hojang2            | 0%  | -
+Action:|User:|Process:|Request:|<br />
+---|---|---|---|---    
+folders scheme                    | @secretnameis       | 0% | -| on hold  waiting for an idea
+rework client                     | @hojang2            | 100% | -| ok
+rework server                     | @hojang2            | 5% | -| on hold
+xlsx table to users               | @hojang2            | 0% | get table from hrle| on hold  waiting for DATA  
+cPanel - web page - add to server | @hojang2            | 0% | still with ?| on hold
+Path logs(score)                  | @hojang2            | 0%  | add score mark to logs|on hold
+think about story                 | @secretnameis       | 0% | write some fancy story|on hold
+write more to-do things           | @secretnameis       | 20% | -|on hold
