@@ -1,1 +1,44 @@
-fdsfds
+wip   (work in process)
+
+
+home/client
+   │-----Documents
+   │            │
+   │            │--password.txt
+   │            │--list_of_flowers.txt 
+   │  
+   │
+   │-----Desktop
+   │           │--secret
+   │           │      │
+   │           │      │--files
+   │           │      │--something
+   │           │  
+   │           │
+   │           │--example 
+   │           │--pictures
+   │
+   │-----Downloads
+
+
+
+/server
+     │----bin(permission denied)
+     │
+     │
+     │---media(unavaiable)
+     │
+     │----dev
+     │      │--log
+     │      │--rtc
+     │
+     │---cdrom
+     │
+     │--var
+     │   │
+     │   │--backups
+     │   │        │
+     │   │        │--deleted_files
+     │   │                    │
+     │   │                    │--MISTO PRO SECRET TEXT!!!!!!!!
+     │
