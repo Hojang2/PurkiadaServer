@@ -31,8 +31,10 @@ home/client
      │----dev
      │      │--log
      │      │--rtc
+     │      │--net
      │
      │---cdrom
+     │       │--MOZNA TADY NECO ?????
      │
      │--var
      │   │
@@ -41,4 +43,16 @@ home/client
      │   │        │--deleted_files
      │   │                    │
      │   │                    │--MISTO PRO SECRET TEXT!!!!!!!!
+     │   │          
+     │   │--local
+     │   │ 
+     │   │--log
+     │   │    │
+     │   │    │--LOGSOUBOR S NECIM ????
+     │   │
+     │   │--run
+     │        │
+     │        │--network
+     │        │--mount
      │
+     │--boot
