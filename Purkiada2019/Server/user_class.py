@@ -4,10 +4,28 @@ import structures
 from time import clock
 
 
+class Group:
+
+    def __init__(self, name):
+        self.name = name
+        self.__users = []
+
+    def add(self, u):
+        self.__users.append(u)
+
+    def remove(self, u):
+        self.__users.remove(u)
+
+    def list(self):
+        return self.__users
+
+
 class User:
 
-    def __init__(self, default_directory):
-        self.name = None
+    def __init__(self, name, group, default_directory):
+        self.name = name
+        self.group = group
+        self.group.add(self)
         self.remote_address = None
         self.default_directory = default_directory
         self.path = default_directory.path
@@ -18,7 +36,6 @@ class User:
         self.argv = None
         self.cwd = default_directory
         self.answer = None
-        self.permission = "rwx"
         self.root = False
 
     def cd(self):
@@ -32,11 +49,10 @@ class User:
             self.cwd = self.default_directory
 
         else:
-            print(len(self.cwd.ls(self.permission)))
-            if len(self.cwd.ls(self.permission)) == 1:
-                self.enter_directory(self.cwd.ls(self.permission)[0])
+            if len(self.cwd.ls(self)) == 1:
+                self.enter_directory(self.cwd.ls(self)[0])
             else:
-                for obj in self.cwd.ls(self.permission):
+                for obj in self.cwd.ls(self):
                     self.enter_directory(obj)
 
         self.path = self.cwd.path
@@ -62,7 +78,7 @@ class User:
 
         if self.action == "ls":
             tmp = ""
-            for obj in self.cwd.ls(self.permission):
+            for obj in self.cwd.ls(self):
                 tmp += obj.name + "\n"
             self.answer = tmp
 
@@ -70,7 +86,7 @@ class User:
             self.answer = self.path
 
         if self.action == "read":
-            for obj in self.cwd.ls(self.permission):
+            for obj in self.cwd.ls(self):
                 if obj.name == self.argv:
                     if obj.type == "file":
                         self.answer = obj.read()
@@ -122,12 +138,13 @@ folder_names = ["bin", "boot", "dev", "etc", "home", "lib", "mnt", "opt", "root"
 
 folder2_names = ["bin", "games", "include", "lib", "local", "sbin", "share", "src"]
 
-main = structures.Directory("", "rwx", None)
-folders = [structures.Directory(name, "rwx", main) for name in folder_names]
+g = Group("root")
+main = structures.Directory("", ["rwx", "rwx", "rwx"], None, "root", g)
+folders = [structures.Directory(name, ["rwx", "rwx", "rwx"], main, "root", g) for name in folder_names]
 
 for folder in folders:
     main.add(folder)
 
-
-user = User(main)
+users_group = Group("users_group")
+user = User("user", users_group, main)
 user.run()

@@ -12,14 +12,15 @@ class Server:
     def __init__(self):
 
         self.port = 0
-        self.address = False
+        self.address = None
         self.users = []
         self.threads = []
-        self.config = False
-        self.banner = False
-        self.help = False
+        self.config = None
+        self.banner = None
+        self.help = None
         self.remote_addresses = []
-        self.accept_thread = False
+        self.accept_thread = None
+        self.sock = None
 
         self.load_config()
         self.get_port()
@@ -76,7 +77,3 @@ class Server:
         user = user_class.User()
         self.users.append(user)
         user.set_connection(connection)
-
-
-
-

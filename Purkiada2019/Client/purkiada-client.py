@@ -76,6 +76,7 @@ class Client:
                 self.connected = True
                 print("new connection with {} on port: {}".format(self.address,
                                                                   self.port))
+                print(self.__sock.recv(4096).decode("utf-8"))  # Prints banner
             except:
 
                 print("Target {}:{} address and port doesn't exists")
