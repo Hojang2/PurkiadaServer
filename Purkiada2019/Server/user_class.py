@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import structures
-from time import clock
-
+from time import clock, sleep
+import json
 
 class Group:
 
@@ -93,6 +93,17 @@ class User:
                     else:
                         print("Target is directory")
 
+    def run_connected(self):
+        while True:
+            self.receive_data()
+            self.data = json.loads(self.data)
+
+            self.action, self.argv = self.data["action"], self.data["argv"]
+
+            self.do_action()
+            sleep(0.1)
+            self.send_data(self.answer)
+
     def run(self):
         while True:
             self.action, *self.argv = input(self.path + "$:").split(" ")
@@ -104,11 +115,10 @@ class User:
         self.__connection = connection
 
     def receive_data(self):
-        length = self.__connection.recv(1024).decode("utf-8")
+        length = int(self.__connection.recv(1024).decode("utf-8"))
         t = clock()
-        self.__connection.send(length.decode())
+        self.__connection.send(str(length).encode())
         self.data = self.__connection.recv(2048).decode("utf-8")
-
         if len(self.data) == length:
             answer = True
         else:
@@ -118,14 +128,15 @@ class User:
         self.__connection.send(str(t - clock()).encode())
 
     def send_data(self, data: str) -> bool:
-
+        if len(data) < 1:
+            data = "Nothing"
         try:
-            length = len(self.action)
+            length = len(data)
             self.__connection.send(str(length).encode())
-            assert (self.__connection.recv().decode("utf-8") == length), "error with sending length"
+            assert (int(self.__connection.recv(1024).decode("utf-8")) == length), "error with sending length"
             self.__connection.send(data.encode())
-            assert (self.__connection.recv().decode("utf-8") == "True"), "Problem with answer from server"
-            t = self.__connection.recv().decode("utf-8")
+            assert (self.__connection.recv(1024).decode("utf-8") == "True"), "Problem with answer from server"
+            t = self.__connection.recv(1024).decode("utf-8")
             print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
@@ -133,6 +144,7 @@ class User:
             return False
 
 
+"""
 folder_names = ["bin", "boot", "dev", "etc", "home", "lib", "mnt", "opt", "root", "sbin", "tmp",
                 "usr", "var"]
 
@@ -148,3 +160,4 @@ for folder in folders:
 users_group = Group("users_group")
 user = User("user", users_group, main)
 user.run()
+"""

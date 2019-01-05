@@ -6,5 +6,6 @@
 	"rename":"change name of file or directory  usage: rename <input_file.txt> <output_file.txt>",
 	"su": "Change your user to root",
 	"exit":"If you are connected to server you will be disconnect, else close the application",
-	"read":"Read the content of the file"
+	"read":"Read the content of the file",
+	"pwd": "    Prints current working directory"
 }

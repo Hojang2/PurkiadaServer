@@ -1,7 +1,8 @@
 {	
 	"port":9600,
-	"banner":"/banners/banner1.txt",
+	"banner":"banners/banner1.txt",
 	"address":"0.0.0.0",
 	"history":"users/history/",
-	"help":"json/help.json"
+	"help":"json/help.json",
+	"user_file":"json/users.json"
 }
