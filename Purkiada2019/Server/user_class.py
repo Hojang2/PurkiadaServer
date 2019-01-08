@@ -91,18 +91,27 @@ class User:
                     if obj.type == "file":
                         self.answer = obj.read()
                     else:
-                        print("Target is directory")
+                        self.answer = "Target is directory"
+
+        if self.action == "disconnect":
+            self.connected = False
+            self.answer = "True"
 
     def run_connected(self):
-        while True:
-            self.receive_data()
-            self.data = json.loads(self.data)
+        self.connected = True
+        while self.connected:
+            try:
+                self.receive_data()
+                self.data = json.loads(self.data)
 
-            self.action, self.argv = self.data["action"], self.data["argv"]
+                self.action, self.argv = self.data["action"], self.data["argv"]
 
-            self.do_action()
-            sleep(0.1)
-            self.send_data(self.answer)
+                self.do_action()
+                sleep(0.1)
+                self.send_data(self.answer)
+            except OSError as e:
+                print("disconnecting user {} from server".format(self.name))
+                break
 
     def run(self):
         while True:
@@ -125,7 +134,7 @@ class User:
             answer = False
 
         self.__connection.send(str(answer).encode())
-        self.__connection.send(str(t - clock()).encode())
+        self.__connection.send(str(clock() - t).encode())
 
     def send_data(self, data: str) -> bool:
         if len(data) < 1:
@@ -142,6 +151,9 @@ class User:
         except AssertionError as e:
             print(e)
             return False
+
+    def disconnect(self):
+        self.__connection.close()
 
 
 """

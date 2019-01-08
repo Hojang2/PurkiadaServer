@@ -87,11 +87,9 @@ class Client:
         self.__password = input("password: ")
         self.__sock.send(dumps({"name": self.name, "password": self.__password}).encode())
         self.data = self.__sock.recv(1024).decode("utf-8")
-        print(self.data)
         if self.data == "True":
             self.connected = True
             self.path = self.__sock.recv(1024).decode("utf-8")
-            print(self.path)
         else:
             print("Invalid username or password")
             self.name = self.default_name
@@ -115,25 +113,35 @@ class Client:
         print(command + "\t - " + self.commands[command])
 
     def run_connected(self):
-        if self.action == "help":
-            self.show_help()
+        try:
+            if self.action == "help":
+                self.show_help()
 
-        elif self.action == "exit":
+            elif self.action == "exit":
+                self.send_data(dumps({"action": "disconnect", "argv": []}))
+                self.receive_data()
+                if self.data == "True":
+                    self.__sock.close()
+                self.path = self.default_path
+                self.name = self.default_name
+                self.address = self.default_address
+                self.connected = False
+
+            else:
+                self.data_send = dumps({"action": self.action, "argv": self.args})
+                self.send_data(self.data_send)
+                self.receive_data()
+                if self.action == "cd":
+                    self.path = self.data
+                else:
+                    print(self.data)
+        except ValueError as e:
+            self.__sock.close()
             self.path = self.default_path
             self.name = self.default_name
             self.address = self.default_address
             self.connected = False
-            self.send_data("disconnect")
-            self.__sock.close()
-
-        else:
-            self.data_send = dumps({"action": self.action, "argv": self.args})
-            self.send_data(self.data_send)
-            self.receive_data()
-            if self.action == "cd":
-                self.path = self.data
-            else:
-                print(self.data)
+            print("Server stop responding disconnected from server")
 
     def send_data(self, data: str) -> bool:
 
@@ -151,21 +159,17 @@ class Client:
             return False
 
     def receive_data(self):
-        print("Receiving data from server")
         length = int(self.__sock.recv(1024).decode("utf-8"))
-        print(length)
         t = clock()
-        print(length)
         self.__sock.send(str(length).encode())
         self.data = self.__sock.recv(2048).decode("utf-8")
-        print(self.data)
         if len(self.data) == length:
             answer = True
         else:
             answer = False
 
         self.__sock.send(str(answer).encode())
-        self.__sock.send(str(t - clock()).encode())
+        self.__sock.send(str(clock() - t).encode())
 
 
 client = Client(manual)

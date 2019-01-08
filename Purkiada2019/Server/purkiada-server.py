@@ -5,6 +5,7 @@ import socket
 import threading
 import structures
 import user_class
+import sys
 
 
 class Server:
@@ -17,7 +18,7 @@ class Server:
         self.groups = []
         self.default_group = None
         self.default_directory = None
-        self.threads = []
+        self.threads = {}
         self.config = None
         self.banner = None
         self.help = None
@@ -25,6 +26,9 @@ class Server:
         self.remote_addresses = []
         self.accept_thread = None
         self.sock = None
+        self.action = None
+        self.args = None
+        self.running = True
 
         self.load_config()
         self.get_port()
@@ -68,20 +72,45 @@ class Server:
         self.sock.listen(1)
 
         self.accept_thread = threading.Thread(target=self.accept_connection)
-        self.accept_thread.daemon = False
+        self.accept_thread.daemon = True
         self.accept_thread.start()
+        while True:
+
+            self.action, *self.args = input("Server$:").split(" ")
+            if len(self.args) == 1:
+                self.args = self.args[0]
+            self.manage_server()
+
+    def manage_server(self):
+        if self.action:
+            if self.action == "show":
+                if self.args == "users":
+                    for user in self.users:
+                        print(user.name)
+                elif self.args == "addresses":
+                    for address in self.remote_addresses:
+                        print(address)
+            elif self.action == "shutdown":
+                for user in self.users:
+                    user.connected = False
+                    user.disconnect()
+                self.running = False
+                sys.exit()
 
     def accept_connection(self):
 
-        while True:
+        while self.running:
 
             connection, address = self.sock.accept()
-
+            address = address[0] + ":" + str(address[1])
             self.remote_addresses.append(address)
             t = threading.Thread(target=self.user_space, args=(connection, address))
             t.daemon = False
             t.start()
-            self.threads.append(t)
+
+            self.threads[address] = t
+        print("Stop accepting connections")
+        sys.exit()
 
     def user_space(self, connection, address):
 
@@ -100,6 +129,10 @@ class Server:
             connection.send("True".encode())
             connection.send(user.path.encode())
             user.run_connected()
+            print("Here")
+            user.disconnect()
+            self.users.remove(user)
+            sys.exit()
 
         else:
             connection.send("False".encode())
