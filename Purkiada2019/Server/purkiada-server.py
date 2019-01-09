@@ -166,7 +166,7 @@ class Server:
         d17 = structures.Directory("deleted_files", ["rwx", "rwx", "rwx"], d11, "root", g)
         d18 = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
 
-       d2.add(d3)
+        d2.add(d3)
         main.add(d1)
         main.add(d2)
         main.add(d4)
