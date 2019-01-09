@@ -6,6 +6,7 @@ import threading
 import structures
 import user_class
 import sys
+from time import sleep
 
 
 class Server:
@@ -37,7 +38,7 @@ class Server:
         self.load_users_file()
         self.load_help()
         self.sock_init()
-        self.test_Directory()
+        self.build_directory_structure()
 
     def load_config(self) -> None:
 
@@ -104,7 +105,8 @@ class Server:
             connection, address = self.sock.accept()
             address = address[0] + ":" + str(address[1])
             self.remote_addresses.append(address)
-            t = threading.Thread(target=self.user_space, args=(connection, address))
+            t = threading.Thread(target=self.user_space,
+                                 args=(connection, address))
             t.daemon = False
             t.start()
 
@@ -123,10 +125,12 @@ class Server:
                     access = True
 
         if access:
-            user = user_class.User(data["name"], self.default_group, self.default_directory)
+            user = user_class.User(data["name"],
+                                   self.default_group, self.default_directory)
             self.users.append(user)
             user.set_connection(connection)
             connection.send("True".encode())
+            sleep(0.1)
             connection.send(user.path.encode())
             user.run_connected()
             print("Here")
@@ -138,19 +142,18 @@ class Server:
             connection.send("False".encode())
             self.remote_addresses.remove(address)
 
-    def test_Directory(self):
-        folder_names = ["bin", "boot", "dev", "etc", "home", "lib", "mnt", "opt", "root", "sbin", "tmp",
-                        "usr", "var"]
-
-        folder2_names = ["bin", "games", "include", "lib", "local", "sbin", "share", "src"]
+    def build_directory_structure(self):
 
         g = user_class.Group("root")
         self.groups.append(g)
         main = structures.Directory("", ["rwx", "rwx", "rwx"], None, "root", g)
-        folders = [structures.Directory(name, ["rwx", "rwx", "rwx"], main, "root", g) for name in folder_names]
+        d1 = structures.Directory("bin", ["rwx", "rwx", "rwx"], main, "root", g)
+        d2 = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
+        d3 = structures.Directory("guest", ["rwx", "rwx", "rwx"], d2, "root", g)
 
-        for folder in folders:
-            main.add(folder)
+        d2.add(d3)
+        main.add(d1)
+        main.add(d2)
 
         self.default_group = user_class.Group("users_group")
         self.default_directory = main
@@ -160,4 +163,3 @@ class Server:
 
 server = Server()
 server.start_server()
-

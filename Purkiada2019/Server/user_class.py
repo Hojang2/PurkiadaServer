@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import structures
 from time import clock, sleep
 import json
+
 
 class Group:
 
@@ -109,7 +109,7 @@ class User:
                 self.do_action()
                 sleep(0.1)
                 self.send_data(self.answer)
-            except OSError as e:
+            except OSError:
                 print("disconnecting user {} from server".format(self.name))
                 break
 
@@ -142,9 +142,11 @@ class User:
         try:
             length = len(data)
             self.__connection.send(str(length).encode())
-            assert (int(self.__connection.recv(1024).decode("utf-8")) == length), "error with sending length"
+            assert (int(self.__connection.recv(1024).decode("utf-8")) == length), \
+                "error with sending length"
             self.__connection.send(data.encode())
-            assert (self.__connection.recv(1024).decode("utf-8") == "True"), "Problem with answer from server"
+            assert (self.__connection.recv(1024).decode("utf-8") == "True"), \
+                "Problem with answer from server"
             t = self.__connection.recv(1024).decode("utf-8")
             print("Data transfer complete in {}".format(t))
             return True
@@ -157,14 +159,18 @@ class User:
 
 
 """
-folder_names = ["bin", "boot", "dev", "etc", "home", "lib", "mnt", "opt", "root", "sbin", "tmp",
-                "usr", "var"]
 
-folder2_names = ["bin", "games", "include", "lib", "local", "sbin", "share", "src"]
+folder_names = ["bin", "boot", "dev", "etc", "home", "lib",
+"mnt", "opt", "root", "sbin", "tmp", "usr", "var"]
+
+folder2_names = ["bin", "games", "include", "lib",
+"local", "sbin", "share", "src"]
 
 g = Group("root")
-main = structures.Directory("", ["rwx", "rwx", "rwx"], None, "root", g)
-folders = [structures.Directory(name, ["rwx", "rwx", "rwx"], main, "root", g) for name in folder_names]
+main = structures.Directory("", ["rwx", "rwx", "rwx"],
+None, "root", g)
+folders = [structures.Directory(name, ["rwx", "rwx", "rwx"],
+main, "root", g) for name in folder_names]
 
 for folder in folders:
     main.add(folder)

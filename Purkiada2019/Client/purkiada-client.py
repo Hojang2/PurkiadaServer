@@ -1,4 +1,5 @@
-from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, gethostname
+from socket import socket, AF_INET, SOCK_STREAM
+# from socket import gethostbyname, gethostname
 from json import dumps
 from time import clock
 manual = {
@@ -87,6 +88,7 @@ class Client:
         self.__password = input("password: ")
         self.__sock.send(dumps({"name": self.name, "password": self.__password}).encode())
         self.data = self.__sock.recv(1024).decode("utf-8")
+        print(self.data)
         if self.data == "True":
             self.connected = True
             self.path = self.__sock.recv(1024).decode("utf-8")
@@ -135,7 +137,7 @@ class Client:
                     self.path = self.data
                 else:
                     print(self.data)
-        except ValueError as e:
+        except ValueError:
             self.__sock.close()
             self.path = self.default_path
             self.name = self.default_name

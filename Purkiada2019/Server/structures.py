@@ -9,7 +9,8 @@
 
 class Directory:
 
-    def __init__(self, name: str, permissions: list, upper_directory, owner, group):
+    def __init__(self, name: str, permissions: list,
+                 upper_directory, owner, group):
         self.name = name
         self.owner = owner
         self. group = group
@@ -51,7 +52,8 @@ class Directory:
 
 class File:
 
-    def __init__(self, name: str, content: str, permissions: str, owner, group):
+    def __init__(self, name: str, content: str,
+                 permissions: str, owner, group):
         self.type = "file"
         self.name = name
         self.owner = owner
