@@ -2,7 +2,7 @@
 
 Action:|User:|Process:|Request:|<br />
 ---|---|---|---|---    
-folders scheme                    | @secretnameis       | 25% | -| on hold  waiting for an idea
+folders scheme                    | @secretnameis       | 60% | -| on hold  waiting for an idea
 rework client                     | @hojang2            | 100% | -| ok
 rework server                     | @hojang2            | 5% | -| on hold
 crete login information           | @hojang2            | 0% | get table from hrle| on hold  waiting for DATA  
