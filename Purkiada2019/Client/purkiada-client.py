@@ -22,10 +22,71 @@ manual = {
         "pwd": "    Prints current working directory"
 }
 
+# Creating structures
+
+############################################
+
+
+class Directory:
+
+    def __init__(self, name: str, permissions: list,
+                 upper_directory, owner):
+        self.name = name
+        self.owner = owner
+        self.path = self.name + "/"
+        self.type = "directory"
+        self.__content = []
+        self.permissions = permissions
+        self.upper_directory = upper_directory
+
+    def __str__(self) -> str:
+        return self.name
+
+    def add(self, new_content) -> None:
+        new_content.path = self.path + new_content.path
+        self.__content.append(new_content)
+
+    def check_permission(self, permission: str, index: int) -> bool:
+        if permission in self.permissions[index]:
+            return True
+        else:
+            return False
+
+    def validate(self, user, permission: str) -> bool:
+        if user.name == self.owner:
+            return self.check_permission(permission, 0)
+        elif user.name == "root":
+            return self.check_permission(permission, 0)
+        else:
+            return self.check_permission(permission, 2)
+
+    def ls(self, user) -> list:
+        if self.validate(user, "r"):
+            return self.__content
+        else:
+            return []
+
+
+class File:
+
+    def __init__(self, name: str, content: str,
+                 permissions: str, owner):
+        self.type = "file"
+        self.name = name
+        self.owner = owner
+        self.__content = content
+        self.permissions = permissions
+
+    def read(self) -> str:
+        return self.__content
+
+    def __str__(self) -> str:
+        return self.name
+
 
 class Client:
 
-    def __init__(self, commands):
+    def __init__(self, commands, default_directory):
         self.commands = commands
         self.connected = False
         self.port = 0
@@ -38,8 +99,9 @@ class Client:
         # Setting default values
         self.data = False
         self.data_send = None
-        self.default_path = "/home/guest"
-        self.path = self.default_path
+        self.default_directory = default_directory
+        self.cwd = default_directory
+        self.path = default_directory.path
         self.default_address = "Kali_linux"
         #  self.default_address = gethostbyname(gethostname())
         self.address = self.default_address
@@ -106,6 +168,53 @@ class Client:
 
         elif self.action == "help":
             self.show_help()
+
+        elif self.action == "cd":
+            self.cd()
+
+        elif self.action == "ls":
+            tmp = ""
+            for obj in self.cwd.ls(self):
+                tmp += obj.name + "\n"
+            print(tmp)
+
+        elif self.action == "pwd":
+            print(self.path)
+
+        if self.action == "read":
+            for obj in self.cwd.ls(self):
+                if obj.name == self.args:
+                    if obj.type == "file":
+                        tmp = obj.read()
+                    else:
+                        tmp = "Target is directory"
+                    print(tmp)
+
+    def cd(self):
+
+        if self.args[0] == "..":
+
+            self.cwd = self.cwd.upper_directory
+
+        elif self.args[0] == "/":
+
+            self.cwd = self.default_directory
+
+        else:
+            if len(self.cwd.ls(self)) == 1:
+                self.enter_directory(self.cwd.ls(self)[0])
+            else:
+                for obj in self.cwd.ls(self):
+                    self.enter_directory(obj)
+
+        self.path = self.cwd.path
+
+    def enter_directory(self, obj):
+        if obj.name == self.args[0]:
+            if obj.type == "directory":
+                self.cwd = obj
+            else:
+                print("Target is not Directory")
 
     def show_help(self):
         for key in self.commands:
@@ -174,5 +283,13 @@ class Client:
         self.__sock.send(str(clock() - t).encode())
 
 
-client = Client(manual)
+main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
+d1 = Directory("bin", ["rwx", "rwx", "rwx"], main, "root")
+d2 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
+d3 = Directory("guest", ["rwx", "rwx", "rwx"], d2, "root")
+
+d2.add(d3)
+main.add(d1)
+main.add(d2)
+client = Client(manual, main)
 client.run()
