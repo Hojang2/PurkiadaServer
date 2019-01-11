@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from time import clock, sleep
+from time import clock, sleep, ctime
 import json
 
 
@@ -22,10 +22,11 @@ class Group:
 
 class User:
 
-    def __init__(self, name, group, default_directory):
+    def __init__(self, name, group, default_directory, history_path):
         self.name = name
         self.group = group
         self.group.add(self)
+        self.log_file = history_path + self.name + "_log"
         self.remote_address = None
         self.default_directory = default_directory
         self.path = default_directory.path
@@ -64,6 +65,10 @@ class User:
             else:
                 print("Target is not Directory")
 
+    def log_action(self):
+        with open(self.log_file, "a") as f:
+            f.write("{} {} {}\n".format(ctime(), self.action, self.argv))
+
     def do_action(self):
 
         self.answer = False
@@ -78,6 +83,9 @@ class User:
 
         if self.action == "ls":
             tmp = ""
+            if len(self.argv) == 0:
+                self.argv = ["None"]
+
             if "a" in self.argv[0]:
                 visible_list = self.cwd.ls(self)
             else:
@@ -120,6 +128,7 @@ class User:
                 self.data = json.loads(self.data)
 
                 self.action, self.argv = self.data["action"], self.data["argv"]
+                self.log_action()
 
                 self.do_action()
                 sleep(0.1)

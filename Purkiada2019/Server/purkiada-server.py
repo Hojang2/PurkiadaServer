@@ -24,6 +24,7 @@ class Server:
         self.banner = None
         self.help = None
         self.__users_list = None
+        self.history_path = None
         self.remote_addresses = []
         self.accept_thread = None
         self.sock = None
@@ -37,6 +38,7 @@ class Server:
         self.load_banner()
         self.load_users_file()
         self.load_help()
+        self.get_history_path()
         self.sock_init()
         self.build_directory_structure()
 
@@ -59,6 +61,9 @@ class Server:
 
     def get_address(self) -> None:
         self.address = self.config["address"]
+
+    def get_history_path(self) -> None:
+        self.history_path = self.config["history"]
 
     def sock_init(self) -> None:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -137,7 +142,8 @@ class Server:
 
         if access:
             user = user_class.User(data["name"],
-                                   self.default_group, self.default_directory)
+                                   self.default_group, self.default_directory,
+                                   self.history_path)
             self.users.append(user)
             user.set_connection(connection)
             connection.send("True".encode())
