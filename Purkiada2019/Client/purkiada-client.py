@@ -83,6 +83,9 @@ class File:
     def __str__(self) -> str:
         return self.name
 
+##########################
+# Client part
+
 
 class Client:
 
@@ -233,10 +236,7 @@ class Client:
                 self.receive_data()
                 if self.data == "True":
                     self.__sock.close()
-                self.path = self.default_path
-                self.name = self.default_name
-                self.address = self.default_address
-                self.connected = False
+                self.disconnect()
 
             else:
                 self.data_send = dumps({"action": self.action, "argv": self.args})
@@ -247,12 +247,16 @@ class Client:
                 else:
                     print(self.data)
         except ValueError:
-            self.__sock.close()
-            self.path = self.default_path
-            self.name = self.default_name
-            self.address = self.default_address
-            self.connected = False
+
+            self.disconnect()
             print("Server stop responding disconnected from server")
+
+    def disconnect(self):
+        self.__sock.close()
+        self.path = self.cwd.path
+        self.name = self.default_name
+        self.address = self.default_address
+        self.connected = False
 
     def send_data(self, data: str) -> bool:
 

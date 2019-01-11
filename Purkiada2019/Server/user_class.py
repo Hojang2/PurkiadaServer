@@ -78,8 +78,23 @@ class User:
 
         if self.action == "ls":
             tmp = ""
-            for obj in self.cwd.ls(self):
-                tmp += obj.name + "\n"
+            if "a" in self.argv[0]:
+                visible_list = self.cwd.ls(self)
+            else:
+                visible_list = []
+                for obj in self.cwd.ls(self):
+                    if obj.name[0] != ".":
+                        visible_list.append(obj)
+
+            for obj in visible_list:
+                if "l" in self.argv[0]:
+                    line = " {} {}:{}:{} {} {} {}\n".format(obj.type, obj.permissions[0],
+                                                            obj.permissions[1], obj.permissions[2],
+                                                            obj.owner, obj.group.name, obj.name)
+                else:
+                    line = obj.name + "\n"
+                tmp += line
+
             self.answer = tmp
 
         if self.action == "pwd":
@@ -156,26 +171,3 @@ class User:
 
     def disconnect(self):
         self.__connection.close()
-
-
-"""
-
-folder_names = ["bin", "boot", "dev", "etc", "home", "lib",
-"mnt", "opt", "root", "sbin", "tmp", "usr", "var"]
-
-folder2_names = ["bin", "games", "include", "lib",
-"local", "sbin", "share", "src"]
-
-g = Group("root")
-main = structures.Directory("", ["rwx", "rwx", "rwx"],
-None, "root", g)
-folders = [structures.Directory(name, ["rwx", "rwx", "rwx"],
-main, "root", g) for name in folder_names]
-
-for folder in folders:
-    main.add(folder)
-
-users_group = Group("users_group")
-user = User("user", users_group, main)
-user.run()
-"""

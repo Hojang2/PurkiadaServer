@@ -97,6 +97,16 @@ class Server:
                     user.disconnect()
                 self.running = False
                 sys.exit()
+            elif self.action == "kick":
+                for user in self.users:
+                    if user.name == self.args:
+                        user.disconnect()
+            elif self.action == "reboot":
+                for user in self.users:
+                    user.connected = False
+                    user.disconnect()
+                self.running = False
+                self.__init__()
 
     def accept_connection(self):
 
@@ -112,6 +122,7 @@ class Server:
 
             self.threads[address] = t
         print("Stop accepting connections")
+        self.sock.close()
         sys.exit()
 
     def user_space(self, connection, address):
@@ -133,7 +144,6 @@ class Server:
             sleep(0.1)
             connection.send(user.path.encode())
             user.run_connected()
-            print("Here")
             user.disconnect()
             self.users.remove(user)
             sys.exit()
@@ -146,16 +156,17 @@ class Server:
 
         g = user_class.Group("root")
         self.groups.append(g)
+
         main = structures.Directory("", ["rwx", "rwx", "rwx"], None, "root", g)
-        d1  = structures.Directory("bin", ["rwx", "rwx", "rwx"], main, "root", g)
-        d2  = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
-        d3  = structures.Directory("guest", ["rwx", "rwx", "rwx"], d2, "root", g)
-        d4  = structures.Directory("media", ["rwx", "rwx", "rwx"], main, "root", g)
-        d5  = structures.Directory("dev", ["rwx", "rwx", "rwx"], main, "root", g)
-        d6  = structures.Directory("log", ["rwx", "rwx", "rwx"], d5, "root", g)
-        d7  = structures.Directory("rtc", ["rwx", "rwx", "rwx"], d5, "root", g)
-        d8  = structures.Directory("net", ["rwx", "rwx", "rwx"], d5, "root", g)
-        d9  = structures.Directory("cdrom", ["rwx", "rwx", "rwx"], main, "root", g)
+        d1 = structures.Directory("bin", ["rwx", "rwx", "rwx"], main, "root", g)
+        d2 = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
+        d3 = structures.Directory("guest", ["rwx", "rwx", "rwx"], d2, "root", g)
+        d4 = structures.Directory("media", ["rwx", "rwx", "rwx"], main, "root", g)
+        d5 = structures.Directory("dev", ["rwx", "rwx", "rwx"], main, "root", g)
+        d6 = structures.Directory("log", ["rwx", "rwx", "rwx"], d5, "root", g)
+        d7 = structures.Directory("rtc", ["rwx", "rwx", "rwx"], d5, "root", g)
+        d8 = structures.Directory("net", ["rwx", "rwx", "rwx"], d5, "root", g)
+        d9 = structures.Directory("cdrom", ["rwx", "rwx", "rwx"], main, "root", g)
         d10 = structures.Directory("var", ["rwx", "rwx", "rwx"], main, "root", g)
         d11 = structures.Directory("backups", ["rwx", "rwx", "rwx"], d10, "root", g)
         d12 = structures.Directory("local", ["rwx", "rwx", "rwx"], d10, "root", g)
