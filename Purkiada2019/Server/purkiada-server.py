@@ -26,6 +26,7 @@ class Server:
         self.__users_list = None
         self.history_path = None
         self.remote_addresses = []
+        self.directories = {}
         self.accept_thread = None
         self.sock = None
         self.action = None
@@ -141,8 +142,13 @@ class Server:
                     access = True
 
         if access:
+            if data["name"] in self.directories:
+                directory = self.directories[data["name"]]
+            else:
+                directory = self.default_directory
+
             user = user_class.User(data["name"],
-                                   self.default_group, self.default_directory,
+                                   self.default_group, directory,
                                    self.history_path)
             self.users.append(user)
             user.set_connection(connection)
@@ -151,6 +157,7 @@ class Server:
             connection.send(user.path.encode())
             user.run_connected()
             user.disconnect()
+            self.directories[user.name] = user.cwd
             self.users.remove(user)
             sys.exit()
 
