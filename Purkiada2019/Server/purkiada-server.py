@@ -31,7 +31,6 @@ class Server:
         self.sock = None
         self.action = None
         self.args = None
-        self.running = True
 
         self.load_config()
         self.get_port()
@@ -84,52 +83,62 @@ class Server:
         while True:
 
             self.action, *self.args = input("Server$:").split(" ")
-            if len(self.args) == 1:
-                self.args = self.args[0]
             self.manage_server()
 
     def manage_server(self):
+        if not self.args:
+            self.args = ["None"]
         if self.action:
             if self.action == "show":
-                if self.args == "users":
+                if self.args[0] == "users":
                     for user in self.users:
                         print(user.name)
-                elif self.args == "addresses":
+                elif self.args[0] == "addresses":
                     for address in self.remote_addresses:
                         print(address)
+                elif self.args[0] == "history":
+
+                        for user in self.users:
+                            if len(self.args) > 1:
+                                if user.name == self.args[1]:
+                                    print(user.history)
+                            else:
+                                print(user.history)
+
             elif self.action == "shutdown":
                 for user in self.users:
                     user.connected = False
                     user.disconnect()
-                self.running = False
+                self.sock.close()
                 sys.exit()
             elif self.action == "kick":
                 for user in self.users:
-                    if user.name == self.args:
+                    if user.name == self.args[0]:
                         user.disconnect()
             elif self.action == "reboot":
                 for user in self.users:
                     user.connected = False
                     user.disconnect()
-                self.running = False
+                self.sock.close()
                 self.__init__()
 
     def accept_connection(self):
 
-        while self.running:
+        while True:
+            try:
+                connection, address = self.sock.accept()
+                address = address[0] + ":" + str(address[1])
+                self.remote_addresses.append(address)
+                t = threading.Thread(target=self.user_space,
+                                     args=(connection, address))
+                t.daemon = False
+                t.start()
 
-            connection, address = self.sock.accept()
-            address = address[0] + ":" + str(address[1])
-            self.remote_addresses.append(address)
-            t = threading.Thread(target=self.user_space,
-                                 args=(connection, address))
-            t.daemon = False
-            t.start()
-
-            self.threads[address] = t
-        print("Stop accepting connections")
-        self.sock.close()
-        sys.exit()
+                self.threads[address] = t
+            except ValueError as e:
+                print(e)
+                print("Stop accepting connections")
+                sys.exit()
 
     def user_space(self, connection, address):
 
@@ -142,14 +151,14 @@ class Server:
                     access = True
 
         if access:
-            if data["name"] in self.directories:
-                directory = self.directories[data["name"]]
-            else:
-                directory = self.default_directory
-
             user = user_class.User(data["name"],
-                                   self.default_group, directory,
-                                   self.history_path)
+                                   self.default_group, self.default_directory,
+                                   self.history_path, self.config["history_length"])
+
+            if data["name"] in self.directories:
+                user.cwd = self.directories[data["name"]]
+                user.path = user.cwd.path
+
             self.users.append(user)
             user.set_connection(connection)
             connection.send("True".encode())

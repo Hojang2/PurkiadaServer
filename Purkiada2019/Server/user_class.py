@@ -22,11 +22,12 @@ class Group:
 
 class User:
 
-    def __init__(self, name, group, default_directory, history_path):
+    def __init__(self, name, group, default_directory, history_path, history_length):
         self.name = name
         self.group = group
         self.group.add(self)
         self.log_file = history_path + self.name + "_log"
+        self.history = History(history_length)
         self.remote_address = None
         self.default_directory = default_directory
         self.path = default_directory.path
@@ -55,7 +56,7 @@ class User:
             else:
                 for obj in self.cwd.ls(self):
                     self.enter_directory(obj)
-
+        print(self.cwd)
         self.path = self.cwd.path
 
     def enter_directory(self, obj):
@@ -66,8 +67,9 @@ class User:
                 print("Target is not Directory")
 
     def log_action(self):
+        self.history.add(self.action, self.argv, self.path)
         with open(self.log_file, "a") as f:
-            f.write("{} {} {}\n".format(ctime(), self.action, self.argv))
+            f.write("{} {}$:{} {}\n".format(ctime(), self.path, self.action, self.argv))
 
     def do_action(self):
 
@@ -180,3 +182,26 @@ class User:
 
     def disconnect(self):
         self.__connection.close()
+
+
+class History:
+    def __init__(self, length=10):
+        self.__history = []
+        self.__length = length
+
+    def add(self, action, argv, path):
+        tmp = ""
+        for index in argv:
+            tmp += index + " "
+        if len(self.__history) == self.__length:
+            del self.__history[0]
+        self.__history.append("{} {}$:{} {}\n".format(ctime(), path, action, argv))
+
+    def clear(self):
+        self.__history = []
+
+    def __str__(self):
+        tmp = ""
+        for line in self.__history:
+            tmp += line
+        return tmp

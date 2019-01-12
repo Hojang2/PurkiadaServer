@@ -37,7 +37,10 @@ class Directory:
         self.type = "directory"
         self.__content = []
         self.permissions = permissions
-        self.upper_directory = upper_directory
+        if upper_directory:
+            self.upper_directory = upper_directory
+        else:
+            self.upper_directory = self
 
     def __str__(self) -> str:
         return self.name
