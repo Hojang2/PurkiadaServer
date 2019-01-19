@@ -1,8 +1,9 @@
 {	
-	"port":9700,
+	"port":9600,
 	"banner":"banners/banner1.txt",
 	"address":"0.0.0.0",
 	"history":"users/history/",
 	"help":"json/help.json",
-	"user_file":"json/users.json"
+	"user_file":"json/users.json",
+	"history_length":10
 }
