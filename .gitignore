@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 Purkiada2019/.idea/
-Purkiada2019/Server/users/history/*
-
+!/Purkiada2019/Server/users/history/
+/Purkiada2019/Server/users/history/*
 
 # C extensions
 *.so
