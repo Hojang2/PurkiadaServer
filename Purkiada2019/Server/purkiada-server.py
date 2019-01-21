@@ -164,10 +164,12 @@ class Server:
             connection.send("True".encode())
             sleep(0.1)
             connection.send(user.path.encode())
+            user.set_key(connection.recv(1024))
             user.run_connected()
             user.disconnect()
             self.directories[user.name] = user.cwd
             self.users.remove(user)
+            self.address.remove(address)
             sys.exit()
 
         else:

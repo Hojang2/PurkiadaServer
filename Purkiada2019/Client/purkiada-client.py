@@ -1,7 +1,8 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, gaierror
 # from socket import gethostbyname, gethostname
+from cryptography.fernet import Fernet, InvalidToken
 from json import dumps
-from time import clock
+from time import clock, sleep
 manual = {
         "ls": "  Prints all files and directories in current directory",
         "help": "  Shows this help",
@@ -101,6 +102,8 @@ class Client:
         self.action = ""
         self.__password = ""
         self.__sock = None
+        self.__key = Fernet.generate_key()
+        self.__cipher_suite = Fernet(self.__key)
 
         # Setting default values
         self.data = False
@@ -137,29 +140,43 @@ class Client:
         if self.sock_init():
             # Syntax of ssh will be 'ssh username@address:port
             tmp = self.args[0].split("@")
-            self.name = tmp[0]
-            tmp = tmp[1]
-            self.address, self.port = tmp.split(":")
+            try:
+                name = tmp[0]
+                tmp = tmp[1]
+                address, port = tmp.split(":")
+            except IndexError:
+                print("Wrong address and port format")
+                address, port, name = None, None, None
 
-            print(self.address, self.port)
-            self.__sock.connect((self.address, int(self.port)))
-            self.connected = True
-            print("new connection with {} on port: {}".format(self.address,
-                                                              self.port))
-            print(self.__sock.recv(4096).decode("utf-8"))  # Prints banner
-            self.validate()
+            try:
+                self.__sock.connect((address, int(port)))
+                print("new connection with {} on port: {}".format(address, port))
+                print(self.__sock.recv(4096).decode("utf-8"))  # Prints banner
+                self.validate(name, address, port)
+
+            except gaierror:
+                print("Wrong address or port")
+            except TypeError:
+                print("Wrong input after ssh")
+            except ValueError:
+                print("Port is not number but String")
 
         else:
             print("Problem with socket initialization")
 
-    def validate(self):
+    def validate(self, name, address, port):
         self.__password = input("password: ")
-        self.__sock.send(dumps({"name": self.name, "password": self.__password}).encode())
+        self.__sock.send(dumps({"name": name, "password": self.__password}).encode())
         self.data = self.__sock.recv(1024).decode("utf-8")
         print(self.data)
         if self.data == "True":
             self.connected = True
             self.path = self.__sock.recv(1024).decode("utf-8")
+            sleep(0.1)
+            self.__sock.send(self.__key)
+            self.name = name
+            self.address = address
+            self.port = port
         else:
             print("Invalid username or password")
             self.name = self.default_name
@@ -197,21 +214,24 @@ class Client:
                     print(tmp)
 
     def cd(self):
+        if len(self.args) > 0:
 
-        if self.args[0] == "..":
+            if self.args[0] == "..":
 
-            self.cwd = self.cwd.upper_directory
+                self.cwd = self.cwd.upper_directory
 
-        elif self.args[0] == "/":
+            elif self.args[0] == "/":
 
-            self.cwd = self.default_directory
+                self.cwd = self.default_directory
 
-        else:
-            if len(self.cwd.ls(self)) == 1:
-                self.enter_directory(self.cwd.ls(self)[0])
             else:
-                for obj in self.cwd.ls(self):
-                    self.enter_directory(obj)
+                if len(self.cwd.ls(self)) == 1:
+                    self.enter_directory(self.cwd.ls(self)[0])
+                else:
+                    for obj in self.cwd.ls(self):
+                        self.enter_directory(obj)
+        else:
+            self.cwd = self.default_directory
 
         self.path = self.cwd.path
 
@@ -261,33 +281,50 @@ class Client:
         self.address = self.default_address
         self.connected = False
 
-    def send_data(self, data: str) -> bool:
+    def receive_data(self):
+        self.data = self.default_directory.path
+        try:
+            length = int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8"))
+            t = clock()
+            self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
+            self.data = self.__cipher_suite.decrypt(self.__sock.recv(2048)).decode("utf-8")
+            if len(self.data) == length:
+                answer = True
+            else:
+                answer = False
 
+            self.__sock.send(self.__cipher_suite.encrypt(str(answer).encode()))
+            self.__sock.send(self.__cipher_suite.encrypt(str(clock() - t).encode()))
+        except InvalidToken:
+            print("Error with receiving data")
+            self.disconnect()
+        except OSError:
+            print("Error with receiving data")
+            self.disconnect()
+
+    def send_data(self, data: str) -> bool:
+        if len(data) < 1:
+            data = "Nothing"
         try:
             length = len(data)
-            self.__sock.send(str(length).encode())
-            assert (int(self.__sock.recv(1024).decode("utf-8")) == length), "error with sending length"
-            self.__sock.send(data.encode())
-            assert (self.__sock.recv(1024).decode("utf-8") == "True"), "Problem with answer from server"
-            t = self.__sock.recv(1024).decode("utf-8")
+            self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
+            assert (int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")) == length), \
+                "error with sending length"
+            self.__sock.send(self.__cipher_suite.encrypt(data.encode()))
+            assert (self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8") == "True"), \
+                "Problem with answer from server"
+            t = self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")
             print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
             print(e)
             return False
-
-    def receive_data(self):
-        length = int(self.__sock.recv(1024).decode("utf-8"))
-        t = clock()
-        self.__sock.send(str(length).encode())
-        self.data = self.__sock.recv(2048).decode("utf-8")
-        if len(self.data) == length:
-            answer = True
-        else:
-            answer = False
-
-        self.__sock.send(str(answer).encode())
-        self.__sock.send(str(clock() - t).encode())
+        except InvalidToken:
+            print("Error with sending data")
+            self.disconnect()
+        except OSError:
+            print("Error with sending data")
+            self.disconnect()
 
 
 main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
