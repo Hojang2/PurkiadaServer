@@ -27,7 +27,7 @@ class User:
         self.name = name
         self.group = group
         self.group.add(self)
-        self.log_file = history_path + self.name + "_log"
+        self.log_file = history_path + self.name + "_log.Log"
         self.history = History(history_length)
         self.remote_address = None
         self.default_directory = default_directory
