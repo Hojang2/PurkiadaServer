@@ -117,6 +117,11 @@ class User:
             self.answer = self.path
 
         if self.action == "read":
+            if len(self.argv) == 0:
+                self.argv = ["None"]
+            else:
+                self.argv = self.argv[0]
+
             for obj in self.cwd.ls(self):
                 if obj.name == self.argv:
                     if obj.type == "file":

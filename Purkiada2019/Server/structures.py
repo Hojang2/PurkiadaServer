@@ -61,6 +61,7 @@ class File:
         self.name = name
         self.owner = owner
         self.group = group
+        self.path = name
         self.__content = content
         self.permissions = permissions
 

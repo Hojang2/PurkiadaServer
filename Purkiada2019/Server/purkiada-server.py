@@ -199,12 +199,14 @@ class Server:
         d15 = structures.Directory("network", ["rwx", "rwx", "rwx"], d14, "root", g)
         d16 = structures.Directory("mount", ["rwx", "rwx", "rwx"], d14, "root", g)
         d17 = structures.Directory("deleted_files", ["rwx", "rwx", "rwx"], d11, "root", g)
-        d18 = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
 
+        f0 = structures.File("File1", "Content of file", ["rwx", "rwx", "rwx"], "root", g)
+
+        d2.add(f0)
         d2.add(d3), main.add(d1), main.add(d2), main.add(d4), main.add(d5)
         d5.add(d6), d5.add(d7), d5.add(d8), main.add(d9), main.add(d10)
         d10.add(d11), d10.add(d12), d10.add(d13), d10.add(d14), d14.add(d15)
-        d14.add(d16), d11.add(d17), main.add(d18)
+        d14.add(d16), d11.add(d17)
 
         self.default_group = user_class.Group("users_group")
         self.default_directory = main

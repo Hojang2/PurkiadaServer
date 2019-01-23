@@ -127,7 +127,6 @@ class Client:
 
             self.action = input(self.starter.format(self.name, self.address, self.path))
             self.action, *self.args = self.action.split(" ")
-
             if self.action in self.commands.keys():
                 if self.connected:
                     self.run_connected()
@@ -139,12 +138,16 @@ class Client:
     def connect(self):
         if self.sock_init():
             # Syntax of ssh will be 'ssh username@address:port
-            tmp = self.args[0].split("@")
+
             try:
+                tmp = self.args[0].split("@")
                 name = tmp[0]
                 tmp = tmp[1]
                 address, port = tmp.split(":")
             except IndexError:
+                print("Wrong address and port format")
+                address, port, name = None, None, None
+            except ValueError:
                 print("Wrong address and port format")
                 address, port, name = None, None, None
 
@@ -161,6 +164,8 @@ class Client:
             except ValueError:
                 print("Port is not number but String")
             except:
+                if self.action == "exit":
+                    exit()
                 print("Something goes wrong")
 
         else:
@@ -170,7 +175,6 @@ class Client:
         self.__password = input("password: ")
         self.__sock.send(dumps({"name": name, "password": self.__password}).encode())
         self.data = self.__sock.recv(1024).decode("utf-8")
-        print(self.data)
         if self.data == "True":
             self.connected = True
             self.path = self.__sock.recv(1024).decode("utf-8")
@@ -259,8 +263,6 @@ class Client:
             elif self.action == "exit":
                 self.send_data(dumps({"action": "disconnect", "argv": []}))
                 self.receive_data()
-                if self.data == "True":
-                    self.__sock.close()
                 self.disconnect()
 
             else:
@@ -287,12 +289,10 @@ class Client:
         self.data = self.default_directory.path
         try:
             length = int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8"))
-            print("length", length)
             t = clock()
             sleep(0.1)
             self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
             self.data = self.__cipher_suite.decrypt(self.__sock.recv(2048)).decode("utf-8")
-            print("length", self.data)
             if len(self.data) == length:
                 answer = True
             else:
@@ -315,18 +315,14 @@ class Client:
             length = len(data)
             sleep(0.1)
             self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
-            temp = int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8"))
-            print("length", temp)
-            assert (temp == length), \
+
+            assert (int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")) == length), \
                 "error with sending length"
             sleep(0.1)
             self.__sock.send(self.__cipher_suite.encrypt(data.encode()))
-            temp = self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")
-            print("True or False", temp)
-            assert (temp == "True"), \
+            assert (self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8") == "True"), \
                 "Problem with answer from server"
             t = self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")
-            print("time", t)
             print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
@@ -344,9 +340,11 @@ main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
 d1 = Directory("bin", ["rwx", "rwx", "rwx"], main, "root")
 d2 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
 d3 = Directory("guest", ["rwx", "rwx", "rwx"], d2, "root")
+d4 = Directory(".secret", ["rwx", "rwx", "rwx"], main, "root")
 
 d2.add(d3)
 main.add(d1)
 main.add(d2)
+main.add(d4)
 client = Client(manual, main)
 client.run()
