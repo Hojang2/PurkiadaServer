@@ -133,6 +133,9 @@ class User:
             self.connected = False
             self.answer = "True"
 
+        if self.action == "submit":
+            self.answer = "Done"
+
     def run_connected(self):
         self.connected = True
         while self.connected:

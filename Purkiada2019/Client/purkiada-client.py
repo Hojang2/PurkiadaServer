@@ -20,7 +20,8 @@ manual = {
         "exit": """ If you are connected to server you will be disconnect,
                 else close the application""",
         "read": "   Read the content of the file",
-        "pwd": "    Prints current working directory"
+        "pwd": "    Prints current working directory",
+        "submit": "submit some text to server"
 }
 
 # Creating structures
