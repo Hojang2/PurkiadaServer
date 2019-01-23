@@ -81,7 +81,8 @@ class File:
         self.owner = owner
         self.__content = content
         self.permissions = permissions
-
+        self.path=self.name
+        
     def read(self) -> str:
         return self.__content
 
@@ -343,14 +344,24 @@ class Client:
 
 
 main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
-d1 = Directory("bin", ["rwx", "rwx", "rwx"], main, "root")
-d2 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
-d3 = Directory("guest", ["rwx", "rwx", "rwx"], d2, "root")
+d1 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
+d2 = Directory("Documents", ["rwx", "rwx", "rwx"], d1, "root")
+d3 = Directory("Desktop", ["rwx", "rwx", "rwx"], d1, "root")
 d4 = Directory(".secret", ["rwx", "rwx", "rwx"], main, "root")
+d5 = Directory("Downloads", ["rwx", "rwx", "rwx"], d1, "root")
+d6 = Directory("secret", ["rwx", "rwx", "rwx"], d3, "root")
+d7 = Directory("pictures", ["rwx", "rwx", "rwx"], d3, "root")
+d8 = Directory("example", ["rwx", "rwx", "rwx"], d3, "root")
+d9 = Directory("files",["rwx", "rwx", "rwx"],d6,"root")
+d10 = Directory("something",["rwx", "rwx", "rwx"],d3,"root")
 
-d2.add(d3)
 main.add(d1)
-main.add(d2)
 main.add(d4)
+d1.add(d2),d1.add(d3),d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8),d6.add(d9)
+d6.add(d9),d3.add(d10)
+d2.add(f0)
+d10.add(f1)
+d4.add(f2)
+
 client = Client(manual, main)
 client.run()
