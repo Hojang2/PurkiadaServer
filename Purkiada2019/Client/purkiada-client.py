@@ -212,13 +212,18 @@ class Client:
             print(self.path)
 
         if self.action == "read":
+            if len(self.args) == 0:
+                self.args = ["None"]
+            else:
+                self.args = self.args[0]
+            tmp = ""
             for obj in self.cwd.ls(self):
                 if obj.name == self.args:
                     if obj.type == "file":
                         tmp = obj.read()
                     else:
                         tmp = "Target is directory"
-                    print(tmp)
+            print(tmp)
 
     def cd(self):
         if len(self.args) > 0:
