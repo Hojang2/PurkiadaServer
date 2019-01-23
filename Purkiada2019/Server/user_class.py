@@ -163,6 +163,7 @@ class User:
         self.__cipher_suite = Fernet(self.__key)
 
     def receive_data(self):
+        self.data = self.default_directory.path
         try:
             length = int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8"))
             t = clock()
@@ -176,6 +177,10 @@ class User:
             self.__connection.send(self.__cipher_suite.encrypt(str(answer).encode()))
             self.__connection.send(self.__cipher_suite.encrypt(str(clock() - t).encode()))
         except InvalidToken:
+            print("Error with receiving data")
+            self.disconnect()
+        except OSError:
+            print("Error with receiving data")
             self.disconnect()
 
     def send_data(self, data: str) -> bool:
@@ -195,6 +200,12 @@ class User:
         except AssertionError as e:
             print(e)
             return False
+        except InvalidToken:
+            print("Error with sending data")
+            self.disconnect()
+        except OSError:
+            print("Error with sending data")
+            self.disconnect()
 
     def disconnect(self):
         self.__connection.close()
