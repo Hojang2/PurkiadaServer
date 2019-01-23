@@ -147,6 +147,9 @@ class User:
             except TypeError:
                 print("disconnecting user {} from server".format(self.name))
                 break
+            except:
+                print("Some not handled error")
+                break
 
     def run(self):
         while True:
@@ -166,15 +169,19 @@ class User:
         self.data = self.default_directory.path
         try:
             length = int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8"))
+            print("length", length)
             t = clock()
+            sleep(0.1)
             self.__connection.send(self.__cipher_suite.encrypt(str(length).encode()))
             self.data = self.__cipher_suite.decrypt(self.__connection.recv(2048)).decode("utf-8")
+            print("length", self.data)
             if len(self.data) == length:
                 answer = True
             else:
                 answer = False
-
+            sleep(0.1)
             self.__connection.send(self.__cipher_suite.encrypt(str(answer).encode()))
+            sleep(0.1)
             self.__connection.send(self.__cipher_suite.encrypt(str(clock() - t).encode()))
         except InvalidToken:
             print("Error with receiving data")
@@ -188,13 +195,20 @@ class User:
             data = "Nothing"
         try:
             length = len(data)
+            sleep(0.1)
             self.__connection.send(self.__cipher_suite.encrypt(str(length).encode()))
-            assert (int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8")) == length), \
+            temp = int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8"))
+            print("length", temp)
+            assert (temp == length), \
                 "error with sending length"
+            sleep(0.1)
             self.__connection.send(self.__cipher_suite.encrypt(data.encode()))
-            assert (self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8") == "True"), \
+            temp = self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8")
+            print("True or False", temp)
+            assert (temp == "True"), \
                 "Problem with answer from server"
             t = self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8")
+            print("time", t)
             print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
