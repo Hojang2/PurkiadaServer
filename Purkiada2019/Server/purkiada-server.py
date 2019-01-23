@@ -201,8 +201,11 @@ class Server:
         d17 = structures.Directory("deleted_files", ["rwx", "rwx", "rwx"], d11, "root", g)
 
         f0 = structures.File("File1", "Content of file", ["rwx", "rwx", "rwx"], "root", g)
+        f1 = structures.File("tajne.txt", "Tady bude pridan odkaz a heslo pro nej, ktere bude nutne ziskat  ", ["rwx", "rwx", "rwx"], "root", g)
+        f2 = structures.File("cd.iso", "unable to open iso file", ["rwx", "rwx", "rwx"], "root", g)
+        f3 = structures.File("log.log", "Wed Jan 23 13:43:56 2019 /$:disconnect []", ["rwx", "rwx", "rwx"], "root", g)
 
-        d2.add(f0)
+        d2.add(f0),d9.add(f2),d13.add(f3),d17.add(f1)
         d2.add(d3), main.add(d1), main.add(d2), main.add(d4), main.add(d5)
         d5.add(d6), d5.add(d7), d5.add(d8), main.add(d9), main.add(d10)
         d10.add(d11), d10.add(d12), d10.add(d13), d10.add(d14), d14.add(d15)
