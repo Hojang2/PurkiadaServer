@@ -1,6 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM, gaierror
 # from socket import gethostbyname, gethostname
-from cryptography.fernet import Fernet, InvalidToken
 from json import dumps
 from time import clock, sleep
 manual = {
@@ -75,13 +74,13 @@ class Directory:
 class File:
 
     def __init__(self, name: str, content: str,
-                 permissions: str, owner):
+                 permissions: list, owner):
         self.type = "file"
         self.name = name
         self.owner = owner
         self.__content = content
         self.permissions = permissions
-        self.path=self.name
+        self.path = self.name
         
     def read(self) -> str:
         return self.__content
@@ -104,8 +103,6 @@ class Client:
         self.action = ""
         self.__password = ""
         self.__sock = None
-        self.__key = Fernet.generate_key()
-        self.__cipher_suite = Fernet(self.__key)
 
         # Setting default values
         self.data = False
@@ -180,8 +177,6 @@ class Client:
         if self.data == "True":
             self.connected = True
             self.path = self.__sock.recv(1024).decode("utf-8")
-            sleep(0.1)
-            self.__sock.send(self.__key)
             self.name = name
             self.address = address
             self.port = port
@@ -295,22 +290,19 @@ class Client:
     def receive_data(self):
         self.data = self.default_directory.path
         try:
-            length = int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8"))
+            length = int(self.__sock.recv(1024).decode("utf-8"))
             t = clock()
             sleep(0.1)
-            self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
-            self.data = self.__cipher_suite.decrypt(self.__sock.recv(2048)).decode("utf-8")
+            self.__sock.send(str(length).encode())
+            self.data = self.__sock.recv(2048).decode("utf-8")
             if len(self.data) == length:
                 answer = True
             else:
                 answer = False
             sleep(0.1)
-            self.__sock.send(self.__cipher_suite.encrypt(str(answer).encode()))
+            self.__sock.send(str(answer).encode())
             sleep(0.1)
-            self.__sock.send(self.__cipher_suite.encrypt(str(clock() - t).encode()))
-        except InvalidToken:
-            print("Error with receiving data")
-            self.disconnect()
+            self.__sock.send(str(clock() - t).encode())
         except OSError:
             print("Error with receiving data")
             self.disconnect()
@@ -321,28 +313,29 @@ class Client:
         try:
             length = len(data)
             sleep(0.1)
-            self.__sock.send(self.__cipher_suite.encrypt(str(length).encode()))
-
-            assert (int(self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")) == length), \
+            self.__sock.send(str(length).encode())
+            assert (int(self.__sock.recv(1024).decode("utf-8")) == length), \
                 "error with sending length"
             sleep(0.1)
-            self.__sock.send(self.__cipher_suite.encrypt(data.encode()))
-            assert (self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8") == "True"), \
+            self.__sock.send(data.encode())
+            assert (self.__sock.recv(1024).decode("utf-8") == "True"), \
                 "Problem with answer from server"
-            t = self.__cipher_suite.decrypt(self.__sock.recv(1024)).decode("utf-8")
-            print("Data transfer complete in {}".format(t))
+            t = self.__sock.recv(1024).decode("utf-8")
+            # print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
             print(e)
             return False
-        except InvalidToken:
-            print("Error with sending data")
-            self.disconnect()
         except OSError:
             print("Error with sending data")
             self.disconnect()
 
 
+message = """Je skvělé e jsi se dostal/la a sem. 
+Dalí nápovìda jak øeit úlohu se nachází tady 
+bit.ly/uloha1Stránka poaduje heslo, 
+které je uvedeno níe:()01101110 01100101 01110101 01101000 01101111 
+0110100 01101110 01100101 01110011"""
 
 main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
 d1 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
@@ -352,15 +345,15 @@ d4 = Directory(".secret", ["rwx", "rwx", "rwx"], main, "root")
 d5 = Directory("Downloads", ["rwx", "rwx", "rwx"], d1, "root")
 d6 = Directory("secret", ["rwx", "rwx", "rwx"], d3, "root")
 d7 = Directory("pictures", ["rwx", "rwx", "rwx"], d3, "root")
-d8 = Directory("example", ["rwx","rwx", "rwx"], d3, "root")
-d9 = Directory("files",["rwx", "rwx", "rwx"],d6,"root")
-d10 = Directory("something",["rwx", "rwx", "rwx"],d3,"root")
-f0 = File("secret", "Je skvìlé e jsi se dostal/la a sem. Dalí nápovìda jak øeit úlohu se nachází tady bit.ly/uloha1Stránka poaduje heslo, které je uvedeno níe:()01101110 01100101 01110101 01101000 01101111 0110100 01101110 01100101 01110011", ["rwx","rwx","rwx"], "root")
+d8 = Directory("example", ["rwx", "rwx", "rwx"], d3, "root")
+d9 = Directory("files", ["rwx", "rwx", "rwx"], d6, "root")
+d10 = Directory("something", ["rwx", "rwx", "rwx"], d3, "root")
+f0 = File("secret", message, ["rwx", "rwx", "rwx"], "root")
 main.add(d1)
 main.add(f0)
 main.add(d4)
-d1.add(d2),d1.add(d3),d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8),d6.add(d9)
-d6.add(d9),d3.add(d10)
+d1.add(d2), d1.add(d3), d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8), d6.add(d9)
+d6.add(d9), d3.add(d10)
 
 client = Client(manual, main)
 client.run()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from time import clock, sleep, ctime
-from cryptography.fernet import Fernet, InvalidToken
 import json
 
 
@@ -39,9 +38,6 @@ class User:
         self.argv = None
         self.cwd = default_directory
         self.answer = None
-        self.root = False
-        self.__key = None
-        self.__cipher_suite = None
 
     def cd(self):
         if len(self.argv) > 0:
@@ -169,31 +165,24 @@ class User:
     def set_connection(self, connection):
         self.__connection = connection
 
-    def set_key(self, key):
-        self.__key = key
-        self.__cipher_suite = Fernet(self.__key)
-
     def receive_data(self):
         self.data = self.default_directory.path
         try:
-            length = int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8"))
+            length = int(self.__connection.recv(1024).decode("utf-8"))
             print("length", length)
             t = clock()
             sleep(0.1)
-            self.__connection.send(self.__cipher_suite.encrypt(str(length).encode()))
-            self.data = self.__cipher_suite.decrypt(self.__connection.recv(2048)).decode("utf-8")
+            self.__connection.send(str(length).encode())
+            self.data = self.__connection.recv(2048).decode("utf-8")
             print("length", self.data)
             if len(self.data) == length:
                 answer = True
             else:
                 answer = False
             sleep(0.1)
-            self.__connection.send(self.__cipher_suite.encrypt(str(answer).encode()))
+            self.__connection.send(str(answer).encode())
             sleep(0.1)
-            self.__connection.send(self.__cipher_suite.encrypt(str(clock() - t).encode()))
-        except InvalidToken:
-            print("Error with receiving data")
-            self.disconnect()
+            self.__connection.send(str(clock() - t).encode())
         except OSError:
             print("Error with receiving data")
             self.disconnect()
@@ -204,27 +193,23 @@ class User:
         try:
             length = len(data)
             sleep(0.1)
-            self.__connection.send(self.__cipher_suite.encrypt(str(length).encode()))
-            temp = int(self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8"))
-            print("length", temp)
+            self.__connection.send(str(length).encode())
+            temp = int(self.__connection.recv(1024).decode("utf-8"))
+            # print("length", temp)
             assert (temp == length), \
                 "error with sending length"
             sleep(0.1)
-            self.__connection.send(self.__cipher_suite.encrypt(data.encode()))
-            temp = self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8")
-            print("True or False", temp)
+            self.__connection.send(data.encode())
+            temp = self.__connection.recv(1024).decode("utf-8")
+            # print("True or False", temp)
             assert (temp == "True"), \
                 "Problem with answer from server"
-            t = self.__cipher_suite.decrypt(self.__connection.recv(1024)).decode("utf-8")
-            print("time", t)
-            print("Data transfer complete in {}".format(t))
+            t = self.__connection.recv(1024).decode("utf-8")
+            # print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
             print(e)
             return False
-        except InvalidToken:
-            print("Error with sending data")
-            self.disconnect()
         except OSError:
             print("Error with sending data")
             self.disconnect()
