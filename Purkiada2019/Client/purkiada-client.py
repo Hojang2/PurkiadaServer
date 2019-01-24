@@ -343,6 +343,7 @@ class Client:
             self.disconnect()
 
 
+
 main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
 d1 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
 d2 = Directory("Documents", ["rwx", "rwx", "rwx"], d1, "root")
@@ -351,17 +352,15 @@ d4 = Directory(".secret", ["rwx", "rwx", "rwx"], main, "root")
 d5 = Directory("Downloads", ["rwx", "rwx", "rwx"], d1, "root")
 d6 = Directory("secret", ["rwx", "rwx", "rwx"], d3, "root")
 d7 = Directory("pictures", ["rwx", "rwx", "rwx"], d3, "root")
-d8 = Directory("example", ["rwx", "rwx", "rwx"], d3, "root")
+d8 = Directory("example", ["rwx","rwx", "rwx"], d3, "root")
 d9 = Directory("files",["rwx", "rwx", "rwx"],d6,"root")
 d10 = Directory("something",["rwx", "rwx", "rwx"],d3,"root")
-
+f0 = File("secret", "Je skvìlé e jsi se dostal/la a sem. Dalí nápovìda jak øeit úlohu se nachází tady bit.ly/uloha1Stránka poaduje heslo, které je uvedeno níe:()01101110 01100101 01110101 01101000 01101111 0110100 01101110 01100101 01110011", ["rwx","rwx","rwx"], "root")
 main.add(d1)
+main.add(f0)
 main.add(d4)
 d1.add(d2),d1.add(d3),d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8),d6.add(d9)
 d6.add(d9),d3.add(d10)
-d2.add(f0)
-d10.add(f1)
-d4.add(f2)
 
 client = Client(manual, main)
 client.run()
