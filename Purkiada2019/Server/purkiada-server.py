@@ -80,7 +80,14 @@ class Server:
         self.sock.bind((self.address, self.port))
         self.sock.listen(1)
 
-        self.accept_connection()
+        self.accept_thread = threading.Thread(target=self.accept_connection)
+        self.accept_thread.daemon = True
+        self.accept_thread.start()
+
+        while True:
+            a = input()
+            if a == "exit":
+                break
 
     def accept_connection(self):
 
