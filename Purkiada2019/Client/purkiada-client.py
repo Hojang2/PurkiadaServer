@@ -291,16 +291,16 @@ class Client:
         try:
             length = int(self.__sock.recv(1024).decode("utf-8"))
             t = clock()
-            sleep(0.1)
+            sleep(0.01)
             self.__sock.send(str(length).encode())
             self.data = self.__sock.recv(2048).decode("utf-8")
             if len(self.data) == length:
                 answer = True
             else:
                 answer = False
-            sleep(0.1)
+            sleep(0.01)
             self.__sock.send(str(answer).encode())
-            sleep(0.1)
+            sleep(0.01)
             self.__sock.send(str(clock() - t).encode())
         except OSError:
             print("Error with receiving data")
@@ -311,11 +311,11 @@ class Client:
             data = "Nothing"
         try:
             length = len(data)
-            sleep(0.1)
+            sleep(0.01)
             self.__sock.send(str(length).encode())
             assert (int(self.__sock.recv(1024).decode("utf-8")) == length), \
                 "error with sending length"
-            sleep(0.1)
+            sleep(0.01)
             self.__sock.send(data.encode())
             assert (self.__sock.recv(1024).decode("utf-8") == "True"), \
                 "Problem with answer from server"

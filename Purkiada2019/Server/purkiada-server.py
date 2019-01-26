@@ -33,6 +33,7 @@ class Server:
         self.action = None
         self.args = None
         self.running = True
+        self.workers = []
 
         self.load_config()
         self.get_port()
@@ -84,7 +85,7 @@ class Server:
         self.accept_thread.start()
 
         while self.running:
-            pass
+            sleep(0.1)
 
         for user in self.users:
             user.connected = False
@@ -137,7 +138,7 @@ class Server:
             self.users.append(user)
             user.set_connection(connection)
             connection.send("True".encode())
-            sleep(0.1)
+            sleep(0.01)
             connection.send(user.path.encode())
             print("new user {} from {}".format(user.name, address))
             user.run_connected()
