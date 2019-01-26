@@ -85,7 +85,7 @@ class Server:
         self.accept_thread.start()
 
         while self.running:
-            sleep(0.1)
+            sleep(0.01)
 
         for user in self.users:
             user.connected = False

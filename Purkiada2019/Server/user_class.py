@@ -135,6 +135,7 @@ class User:
     def run_connected(self):
         self.connected = True
         while self.connected:
+            print("True")
             try:
                 self.receive_data()
                 self.data = json.loads(self.data)
@@ -152,9 +153,11 @@ class User:
             except TypeError:
                 print("disconnecting user {} from server".format(self.name))
                 break
+            """
             except:
                 print("Some not handled error")
                 break
+            """
 
     def run(self):
         while True:
