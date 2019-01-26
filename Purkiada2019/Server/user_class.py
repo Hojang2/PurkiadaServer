@@ -135,15 +135,12 @@ class User:
     def run_connected(self):
         self.connected = True
         while self.connected:
-            print("True")
             try:
                 self.receive_data()
                 self.data = json.loads(self.data)
 
                 self.action, self.argv = self.data["action"], self.data["argv"]
                 self.log_action()
-
-                self.do_action()
                 sleep(0.01)
                 self.send_data(self.answer)
 
@@ -153,11 +150,9 @@ class User:
             except TypeError:
                 print("disconnecting user {} from server".format(self.name))
                 break
-            """
             except:
                 print("Some not handled error")
                 break
-            """
 
     def run(self):
         while True:
@@ -194,12 +189,12 @@ class User:
             data = "Nothing"
         try:
             length = len(data)
-            sleep(0.01)
+            sleep(0.1)
             self.__connection.send(str(length).encode())
             temp = int(self.__connection.recv(1024).decode("utf-8"))
             assert (temp == length), \
                 "error with sending length"
-            sleep(0.01)
+            sleep(0.1)
             self.__connection.send(data.encode())
             temp = self.__connection.recv(1024).decode("utf-8")
             assert (temp == "True"), \

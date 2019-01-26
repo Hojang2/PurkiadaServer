@@ -311,11 +311,11 @@ class Client:
             data = "Nothing"
         try:
             length = len(data)
-            sleep(0.01)
+            sleep(0.1)
             self.__sock.send(str(length).encode())
             assert (int(self.__sock.recv(1024).decode("utf-8")) == length), \
                 "error with sending length"
-            sleep(0.01)
+            sleep(0.1)
             self.__sock.send(data.encode())
             assert (self.__sock.recv(1024).decode("utf-8") == "True"), \
                 "Problem with answer from server"

@@ -80,21 +80,11 @@ class Server:
         self.sock.bind((self.address, self.port))
         self.sock.listen(1)
 
-        self.accept_thread = threading.Thread(target=self.accept_connection)
-        self.accept_thread.daemon = True
-        self.accept_thread.start()
-
-        while self.running:
-            sleep(0.01)
-
-        for user in self.users:
-            user.connected = False
-            user.disconnect()
-        self.sock.close()
+        self.accept_connection()
 
     def accept_connection(self):
 
-        while True:
+        while self.running:
             try:
                 connection, address = self.sock.accept()
                 address = address[0] + ":" + str(address[1])
@@ -109,6 +99,11 @@ class Server:
                 print(e)
                 print("Stop accepting connections")
                 sys.exit()
+
+        for user in self.users:
+            user.connected = False
+            user.disconnect()
+        self.sock.close()
 
     def user_space(self, connection, address):
 
