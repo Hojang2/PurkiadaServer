@@ -138,6 +138,7 @@ class User:
             try:
 
                 self.receive_data()
+                print(self.data)
                 self.data = json.loads(self.data)
 
                 self.action, self.argv = self.data["action"], self.data["argv"]
@@ -152,6 +153,7 @@ class User:
             except TypeError:
                 print("disconnecting user {} from server".format(self.name))
                 break
+
             except:
                 print("Some not handled error")
                 break
@@ -169,21 +171,30 @@ class User:
     def receive_data(self):
         self.data = self.default_directory.path
         try:
-            self.data = self.__connection.recv(2048).decode("utf-8")
+            self.data = self.__connection.recv(1024).decode("utf-8")
 
         except OSError:
             print("Error with receiving data")
             self.disconnect()
 
+        except:
+            print("some error")
+            self.disconnect()
+
     def send_data(self, data: str):
+        print(data)
         try:
-            if len(data) < 1:
-                data = "Nothing"
+            if not data:
+                data = "nothing"
 
             self.__connection.send(data.encode())
 
         except OSError:
             print("Error with sending data")
+            self.disconnect()
+
+        except:
+            print("some error")
             self.disconnect()
 
     def disconnect(self):

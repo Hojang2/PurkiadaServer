@@ -293,16 +293,22 @@ class Client:
         except OSError:
             print("Error with receiving data")
             self.disconnect()
+        except:
+            print("Some error")
+            self.disconnect()
 
     def send_data(self, data: str):
         try:
-            if len(data) > 1:
-                data = "Nothing"
+            if not data:
+                data = "nothing"
             sleep(0.1)
             self.__sock.send(data.encode())
 
         except OSError:
             print("Error with sending data")
+            self.disconnect()
+        except:
+            print("Some error")
             self.disconnect()
 
 
