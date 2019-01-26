@@ -4,7 +4,7 @@ Purkiada Enterprise education edition
 
 Action:|User:|Process:|Request:|<br />
 ---|---|---|---|---    
-delete unnecessary information    | @secretnameis       | 100 % |
+delete unnecessary information    | @secretnameis       | 100 % | on hold
 
 
 Pro ty co si chtějí otestovat tuto úlohu mám menší návod.
