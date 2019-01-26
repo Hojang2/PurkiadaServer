@@ -145,6 +145,7 @@ class User:
                 self.do_action()
                 sleep(0.1)
                 self.send_data(self.answer)
+
             except OSError:
                 print("disconnecting user {} from server".format(self.name))
                 break
@@ -169,12 +170,10 @@ class User:
         self.data = self.default_directory.path
         try:
             length = int(self.__connection.recv(1024).decode("utf-8"))
-            print("length", length)
             t = clock()
             sleep(0.1)
             self.__connection.send(str(length).encode())
             self.data = self.__connection.recv(2048).decode("utf-8")
-            print("length", self.data)
             if len(self.data) == length:
                 answer = True
             else:
@@ -195,17 +194,15 @@ class User:
             sleep(0.1)
             self.__connection.send(str(length).encode())
             temp = int(self.__connection.recv(1024).decode("utf-8"))
-            # print("length", temp)
             assert (temp == length), \
                 "error with sending length"
             sleep(0.1)
             self.__connection.send(data.encode())
             temp = self.__connection.recv(1024).decode("utf-8")
-            # print("True or False", temp)
             assert (temp == "True"), \
                 "Problem with answer from server"
             t = self.__connection.recv(1024).decode("utf-8")
-            # print("Data transfer complete in {}".format(t))
+            print("Data transfer complete in {}".format(t))
             return True
         except AssertionError as e:
             print(e)

@@ -1,5 +1,4 @@
 import user_class
-import structures
 
 
 class Root(user_class.User):
@@ -7,16 +6,17 @@ class Root(user_class.User):
     def __init__(self, name, group, default_directory, history_path, history_length, server):
 
         super().__init__(name, group, default_directory, history_path, history_length)
-        self.Server = server
+        self.server = server
         self.history = user_class.History()
 
-    def set_connection(self):
-        super().set_connection()
+    def set_connection(self, connection):
+        super().set_connection(connection)
 
     def receive_data(self):
         super().receive_data()
 
     def send_data(self, data: str):
+        print(self.answer)
         super().send_data(data)
 
     def disconnect(self):
@@ -86,29 +86,43 @@ class Root(user_class.User):
                     else:
                         self.answer = "Target is directory"
 
+        temp = ""
+        if self.action == "show":
+            if self.argv[0] == "users":
+                for user in self.server.users:
+                    temp += user.name + "\n"
+                self.answer = temp
+            elif self.argv[0] == "addresses":
+                for address in self.server.remote_addresses:
+                    temp += address + "\n"
+                self.answer = temp
+            elif self.argv[0] == "history":
+
+                    for user in self.server.users:
+                        if len(self.argv) > 1:
+                            if user.name == self.argv[1]:
+                                temp += user.history.__str__()
+                        else:
+                            temp += user.history.__str__()
+                    self.answer = temp
+
+        elif self.action == "shutdown":
+            self.server.running = False
+
+        elif self.action == "kick":
+            for user in self.server.users:
+                if user.name == self.argv[0]:
+                    user.disconnect()
+        elif self.action == "reboot":
+            for user in self.server.users:
+                user.connected = False
+                user.disconnect()
+            self.server.sock.close()
+            self.server.__init__()
+
         if self.action == "disconnect":
             self.connected = False
             self.answer = "True"
 
         if self.action == "submit":
             self.answer = "Done"
-
-g = user_class.Group("root")
-main = structures.Directory("", ["rwx", "rwx", "rwx"], None, "root", g)
-d1 = structures.Directory("home", ["rwx", "rwx", "rwx"], main, "root", g)
-d2 = structures.Directory("Documents", ["rwx", "rwx", "rwx"], d1, "root", g)
-d3 = structures.Directory("Desktop", ["rwx", "rwx", "rwx"], d1, "root", g)
-d4 = structures.Directory(".secret", ["rwx", "rwx", "rwx"], main, "root", g)
-d5 = structures.Directory("Downloads", ["rwx", "rwx", "rwx"], d1, "root", g)
-d6 = structures.Directory("secret", ["rwx", "rwx", "rwx"], d3, "root", g)
-d7 = structures.Directory("pictures", ["rwx", "rwx", "rwx"], d3, "root", g)
-d8 = structures.Directory("example", ["rwx", "rwx", "rwx"], d3, "root", g)
-d9 = structures.Directory("files", ["rwx", "rwx", "rwx"], d6, "root", g)
-d10 = structures.Directory("something", ["rwx", "rwx", "rwx"], d3, "root", g)
-main.add(d1)
-main.add(d4)
-d1.add(d2), d1.add(d3), d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8), d6.add(d9)
-d6.add(d9), d3.add(d10)
-
-root = Root("root", g, main, "users/history/", 20, "sffjs")
-print(root.argv)

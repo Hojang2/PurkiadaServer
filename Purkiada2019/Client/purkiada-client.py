@@ -1,5 +1,4 @@
 from socket import socket, AF_INET, SOCK_STREAM, gaierror
-# from socket import gethostbyname, gethostname
 from json import dumps
 from time import clock, sleep
 manual = {
@@ -103,6 +102,7 @@ class Client:
         self.action = ""
         self.__password = ""
         self.__sock = None
+        self.root_commands = ["show", "shutdown", "kick", "reboot"]
 
         # Setting default values
         self.data = False
@@ -111,7 +111,6 @@ class Client:
         self.cwd = default_directory
         self.path = default_directory.path
         self.default_address = "Kali_linux"
-        #  self.default_address = gethostbyname(gethostname())
         self.address = self.default_address
         self.default_name = "guest"
         self.name = self.default_name
@@ -126,7 +125,7 @@ class Client:
 
             self.action = input(self.starter.format(self.name, self.address, self.path))
             self.action, *self.args = self.action.split(" ")
-            if self.action in self.commands.keys():
+            if self.action in self.commands.keys() or self.action in self.root_commands:
                 if self.connected:
                     self.run_connected()
                 else:

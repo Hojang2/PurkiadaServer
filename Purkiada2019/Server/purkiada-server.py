@@ -7,6 +7,7 @@ import structures
 import user_class
 import sys
 from time import sleep
+import root_class
 
 
 class Server:
@@ -31,6 +32,7 @@ class Server:
         self.sock = None
         self.action = None
         self.args = None
+        self.running = True
 
         self.load_config()
         self.get_port()
@@ -80,47 +82,14 @@ class Server:
         self.accept_thread = threading.Thread(target=self.accept_connection)
         self.accept_thread.daemon = True
         self.accept_thread.start()
-        while True:
 
-            self.action, *self.args = input("Server$:").split(" ")
-            self.manage_server()
+        while self.running:
+            pass
 
-    def manage_server(self):
-        if not self.args:
-            self.args = ["None"]
-        if self.action:
-            if self.action == "show":
-                if self.args[0] == "users":
-                    for user in self.users:
-                        print(user.name)
-                elif self.args[0] == "addresses":
-                    for address in self.remote_addresses:
-                        print(address)
-                elif self.args[0] == "history":
-
-                        for user in self.users:
-                            if len(self.args) > 1:
-                                if user.name == self.args[1]:
-                                    print(user.history)
-                            else:
-                                print(user.history)
-
-            elif self.action == "shutdown":
-                for user in self.users:
-                    user.connected = False
-                    user.disconnect()
-                self.sock.close()
-                sys.exit()
-            elif self.action == "kick":
-                for user in self.users:
-                    if user.name == self.args[0]:
-                        user.disconnect()
-            elif self.action == "reboot":
-                for user in self.users:
-                    user.connected = False
-                    user.disconnect()
-                self.sock.close()
-                self.__init__()
+        for user in self.users:
+            user.connected = False
+            user.disconnect()
+        self.sock.close()
 
     def accept_connection(self):
 
@@ -152,27 +121,31 @@ class Server:
 
         if access:
             if data["name"] == "root":
-                pass
+                user = root_class.Root(data["name"],
+                                       self.default_group, self.default_directory,
+                                       self.history_path, self.config["history_length"],
+                                       self)
             else:
                 user = user_class.User(data["name"],
                                        self.default_group, self.default_directory,
                                        self.history_path, self.config["history_length"])
 
-                if data["name"] in self.directories:
-                    user.cwd = self.directories[data["name"]]
-                    user.path = user.cwd.path
+            if data["name"] in self.directories:
+                user.cwd = self.directories[data["name"]]
+                user.path = user.cwd.path
 
-                self.users.append(user)
-                user.set_connection(connection)
-                connection.send("True".encode())
-                sleep(0.1)
-                connection.send(user.path.encode())
-                user.run_connected()
-                user.disconnect()
-                self.directories[user.name] = user.cwd
-                self.users.remove(user)
-                self.remote_addresses.remove(address)
-                sys.exit()
+            self.users.append(user)
+            user.set_connection(connection)
+            connection.send("True".encode())
+            sleep(0.1)
+            connection.send(user.path.encode())
+            print("new user {} from {}".format(user.name, address))
+            user.run_connected()
+            user.disconnect()
+            self.directories[user.name] = user.cwd
+            self.users.remove(user)
+            self.remote_addresses.remove(address)
+            sys.exit()
 
         else:
             connection.send("False".encode())
