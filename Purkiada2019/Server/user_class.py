@@ -136,10 +136,12 @@ class User:
         self.connected = True
         while self.connected:
             try:
+
                 self.receive_data()
                 self.data = json.loads(self.data)
 
                 self.action, self.argv = self.data["action"], self.data["argv"]
+                self.do_action()
                 self.log_action()
                 sleep(0.01)
                 self.send_data(self.answer)
