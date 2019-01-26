@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from time import clock, sleep, ctime
+from time import sleep, ctime
 import json
 
 
@@ -169,44 +169,19 @@ class User:
     def receive_data(self):
         self.data = self.default_directory.path
         try:
-            length = int(self.__connection.recv(1024).decode("utf-8"))
-            t = clock()
-            sleep(0.01)
-            self.__connection.send(str(length).encode())
             self.data = self.__connection.recv(2048).decode("utf-8")
-            if len(self.data) == length:
-                answer = True
-            else:
-                answer = False
-            sleep(0.01)
-            self.__connection.send(str(answer).encode())
-            sleep(0.01)
-            self.__connection.send(str(clock() - t).encode())
+
         except OSError:
             print("Error with receiving data")
             self.disconnect()
 
-    def send_data(self, data: str) -> bool:
-        if len(data) < 1:
-            data = "Nothing"
+    def send_data(self, data: str):
         try:
-            length = len(data)
-            sleep(0.1)
-            self.__connection.send(str(length).encode())
-            temp = int(self.__connection.recv(1024).decode("utf-8"))
-            assert (temp == length), \
-                "error with sending length"
-            sleep(0.1)
+            if len(data) < 1:
+                data = "Nothing"
+
             self.__connection.send(data.encode())
-            temp = self.__connection.recv(1024).decode("utf-8")
-            assert (temp == "True"), \
-                "Problem with answer from server"
-            t = self.__connection.recv(1024).decode("utf-8")
-            print("Data transfer complete in {}".format(t))
-            return True
-        except AssertionError as e:
-            print(e)
-            return False
+
         except OSError:
             print("Error with sending data")
             self.disconnect()

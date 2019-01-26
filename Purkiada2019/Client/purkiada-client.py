@@ -1,6 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM, gaierror
 from json import dumps
-from time import clock, sleep
+from time import sleep
 manual = {
         "ls": "  Prints all files and directories in current directory",
         "help": "  Shows this help",
@@ -289,42 +289,18 @@ class Client:
     def receive_data(self):
         self.data = self.default_directory.path
         try:
-            length = int(self.__sock.recv(1024).decode("utf-8"))
-            t = clock()
-            sleep(0.01)
-            self.__sock.send(str(length).encode())
             self.data = self.__sock.recv(2048).decode("utf-8")
-            if len(self.data) == length:
-                answer = True
-            else:
-                answer = False
-            sleep(0.01)
-            self.__sock.send(str(answer).encode())
-            sleep(0.01)
-            self.__sock.send(str(clock() - t).encode())
         except OSError:
             print("Error with receiving data")
             self.disconnect()
 
-    def send_data(self, data: str) -> bool:
-        if len(data) < 1:
-            data = "Nothing"
+    def send_data(self, data: str):
         try:
-            length = len(data)
-            sleep(0.1)
-            self.__sock.send(str(length).encode())
-            assert (int(self.__sock.recv(1024).decode("utf-8")) == length), \
-                "error with sending length"
+            if len(data) > 1:
+                data = "Nothing"
             sleep(0.1)
             self.__sock.send(data.encode())
-            assert (self.__sock.recv(1024).decode("utf-8") == "True"), \
-                "Problem with answer from server"
-            t = self.__sock.recv(1024).decode("utf-8")
-            # print("Data transfer complete in {}".format(t))
-            return True
-        except AssertionError as e:
-            print(e)
-            return False
+
         except OSError:
             print("Error with sending data")
             self.disconnect()

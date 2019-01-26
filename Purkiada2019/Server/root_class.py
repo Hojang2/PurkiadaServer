@@ -16,7 +16,6 @@ class Root(user_class.User):
         super().receive_data()
 
     def send_data(self, data: str):
-        print(self.answer)
         super().send_data(data)
 
     def disconnect(self):
