@@ -174,7 +174,7 @@ class Server:
 
         f0 = structures.File("File1.txt", "Content of file", ["rwx", "rwx", "rwx"], "root", g)
         f1 = structures.File("ukol2.txt", "Tady je zakodovane heslo(je nutne ho dekodovat): 70 75 72 6b 69 61 64 61 ", ["rwx", "rwx", "rwx"], "root", g)
-        f2 = structures.File("cd.iso", "unable to open iso file", ["rwx", "rwx", "rwx"], "root", g
+        f2 = structures.File("cd.iso", "unable to open iso file", ["rwx", "rwx", "rwx"], "root", g)
         f3 = structures.File("log.log", "Wed Jan 23 13:43:56 2019 /$:disconnect []", ["rwx", "rwx", "rwx"], "root", g)
         f4 = structures.File("ukol3.txt", "heslo: ...- ... . -.-. .... -. ---", ["rwx", "rwx", "rwx"], "root", g)
         f5 = structures.File("ukol4.txt", "very hard to find password: 2019 ", ["rwx", "rwx", "rwx"], "root", g)
