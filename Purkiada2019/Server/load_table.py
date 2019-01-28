@@ -5,14 +5,17 @@ class TableWorker:
     def __init__(self, table_path):
         self.table_path = table_path
         self.text_path = table_path.replace("xlsx", "txt")
-        self.workbook = xlrd.open_workbook(self.table_path)
-        self.sheet = self.workbook.sheet_by_index(0)
+        self.workbook = None
+        self.sheet = None
         self.users = None
         self.passwords = None
         self.data = []
 
     def get_table(self):
         try:
+
+            self.workbook = xlrd.open_workbook(self.table_path)
+            self.sheet = self.workbook.sheet_by_index(0)
             data = [[self.sheet.cell_value(r, c)
                     for c in range(self.sheet.ncols)]
                     for r in range(self.sheet.nrows)]
