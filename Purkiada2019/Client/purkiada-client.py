@@ -312,29 +312,30 @@ class Client:
             self.disconnect()
 
 
-message = """Je skvělé e jsi se dostal/la a sem. 
-Dalí nápovìda jak øeit úlohu se nachází tady 
-bit.ly/uloha1Stránka poaduje heslo, 
-které je uvedeno níe:()01101110 01100101 01110101 01101000 01101111 
-0110100 01101110 01100101 01110011"""
-
+message = """Je skvele ze jsi se dostal/la az sem.
+Dalsi napoveda jak resit ulohu je na teto strance:
+bit.ly/uloha1  Stranka pozaduje heslo,
+ktere je uvedeno zde: 01101110 01100101 01110101 01101000 01101111 01100100 01101110 01100101 01110011"""
+            
 main = Directory("", ["rwx", "rwx", "rwx"], None, "root")
 d1 = Directory("home", ["rwx", "rwx", "rwx"], main, "root")
 d2 = Directory("Documents", ["rwx", "rwx", "rwx"], d1, "root")
 d3 = Directory("Desktop", ["rwx", "rwx", "rwx"], d1, "root")
 d4 = Directory(".secret", ["rwx", "rwx", "rwx"], main, "root")
-d5 = Directory("Downloads", ["rwx", "rwx", "rwx"], d1, "root")
+            
 d6 = Directory("secret", ["rwx", "rwx", "rwx"], d3, "root")
-d7 = Directory("pictures", ["rwx", "rwx", "rwx"], d3, "root")
 d8 = Directory("example", ["rwx", "rwx", "rwx"], d3, "root")
 d9 = Directory("files", ["rwx", "rwx", "rwx"], d6, "root")
 d10 = Directory("something", ["rwx", "rwx", "rwx"], d3, "root")
-f0 = File("secret", message, ["rwx", "rwx", "rwx"], "root")
+f0 = File("secret.txt",message, ["rwx", "rwx", "rwx"], "root")
+f1 = File("soubor.txt","Zde nic neni!", ["rwx", "rwx", "rwx"], "root")
+
+
 main.add(d1)
-main.add(f0)
+d2.add(f0)
 main.add(d4)
-d1.add(d2), d1.add(d3), d1.add(d5), d3.add(d6), d3.add(d7), d3.add(d8), d6.add(d9)
-d6.add(d9), d3.add(d10)
+d1.add(d2), d1.add(d3), d3.add(d6), d3.add(d8),
+d6.add(d9), d3.add(d10),d4.add(f1)
 
 client = Client(manual, main)
 client.run()
