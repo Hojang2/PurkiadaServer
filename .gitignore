@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 Purkiada2019/.idea/
 *.Log
-
+*.xlsx
+*.txt
 # C extensions
 *.so
 

@@ -8,6 +8,7 @@ import user_class
 import sys
 from time import sleep
 import root_class
+from load_table import TableWorker
 
 
 class Server:
@@ -22,6 +23,7 @@ class Server:
         self.default_directory = None
         self.threads = {}
         self.config = None
+        self.table = None
         self.banner = None
         self.help = None
         self.__users_list = None
@@ -33,7 +35,6 @@ class Server:
         self.action = None
         self.args = None
         self.running = True
-        self.workers = []
 
         self.load_config()
         self.get_port()
@@ -56,8 +57,16 @@ class Server:
             self.banner = f.read()
 
     def load_users_file(self)-> None:
+        """
+        Data for testing. Used only for testing.
         with open(self.config["user_file"], "r") as f:
             self.__users_list = json.load(f, strict=False)
+        """
+        self.table = TableWorker(self.config["user_file"])
+        self.table.get_text()
+        self.__users_list = self.table.get_data()
+
+        print(type(self.__users_list))
 
     def get_port(self) -> None:
         self.port = self.config["port"]
