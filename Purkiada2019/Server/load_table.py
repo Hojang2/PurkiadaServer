@@ -25,11 +25,11 @@ class TableWorker:
 
         self.users = []
         for i in range(1, len(data)):
-            self.users.append(data[i][4])
+            self.users.append(data[i][3])
 
         self.passwords = []
         for i in range(1, len(data)):
-            self.passwords.append(str(int(data[i][3])))
+            self.passwords.append(str(int(data[i][4])))
 
         self.data = data
 
@@ -47,7 +47,7 @@ class TableWorker:
             file = f.readlines()
             for data in file:
                 data = data.replace("\n", "")
-                user, password = data.split("-")
+                password, user = data.split("-")
                 self.users.append(user)
                 self.passwords.append(password)
                 self.data.append(user + " " + password)
