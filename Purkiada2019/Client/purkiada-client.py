@@ -327,15 +327,15 @@ d6 = Directory("secret", ["rwx", "rwx", "rwx"], d3, "root")
 d8 = Directory("example", ["rwx", "rwx", "rwx"], d3, "root")
 d9 = Directory("files", ["rwx", "rwx", "rwx"], d6, "root")
 d10 = Directory("something", ["rwx", "rwx", "rwx"], d3, "root")
-f0 = File("secret.txt",message, ["rwx", "rwx", "rwx"], "root")
-f1 = File("soubor.txt","Zde nic neni!", ["rwx", "rwx", "rwx"], "root")
+f0 = File("secret.txt", message, ["rwx", "rwx", "rwx"], "root")
+f1 = File("soubor.txt", "Zde nic neni!", ["rwx", "rwx", "rwx"], "root")
 
 
 main.add(d1)
 d2.add(f0)
 main.add(d4)
 d1.add(d2), d1.add(d3), d3.add(d6), d3.add(d8),
-d6.add(d9), d3.add(d10),d4.add(f1)
+d6.add(d9), d3.add(d10), d4.add(f1)
 
 client = Client(manual, main)
 client.run()

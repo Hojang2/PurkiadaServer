@@ -132,7 +132,7 @@ class Server:
                     access = True
 
         if access:
-            if data["name"] == "root":
+            if data["name"] == "4321":
                 user = root_class.Root(data["name"],
                                        self.default_group, self.default_directory,
                                        self.history_path, self.config["history_length"],
