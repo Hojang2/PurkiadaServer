@@ -22,8 +22,9 @@ class Group:
 
 class User:
 
-    def __init__(self, name, group, default_directory, history_path, history_length):
+    def __init__(self, name, group, default_directory, history_path, history_length, address):
         self.name = name
+        self.address = address
         self.group = group
         self.group.add(self)
         self.log_file = history_path + self.name + "_log.Log"
@@ -71,7 +72,7 @@ class User:
     def log_action(self):
         self.history.add(self.action, self.argv, self.path)
         with open(self.log_file, "a") as f:
-            f.write("{} {}$:{} {}\n".format(ctime(), self.path, self.action, self.argv))
+            f.write("{} {} {}$:{} {}\n".format(self.address, ctime(), self.path, self.action, self.argv))
 
     def do_action(self):
 

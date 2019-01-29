@@ -3,9 +3,9 @@ import user_class
 
 class Root(user_class.User):
 
-    def __init__(self, name, group, default_directory, history_path, history_length, server):
+    def __init__(self, name, group, default_directory, history_path, history_length, address, server):
 
-        super().__init__(name, group, default_directory, history_path, history_length)
+        super().__init__(name, group, default_directory, history_path, history_length, address)
         self.server = server
         self.history = user_class.History()
 

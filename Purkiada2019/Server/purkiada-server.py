@@ -135,12 +135,12 @@ class Server:
             if data["name"] == "4321":
                 user = root_class.Root(data["name"],
                                        self.default_group, self.default_directory,
-                                       self.history_path, self.config["history_length"],
+                                       self.history_path, self.config["history_length"], address,
                                        self)
             else:
                 user = user_class.User(data["name"],
                                        self.default_group, self.default_directory,
-                                       self.history_path, self.config["history_length"])
+                                       self.history_path, self.config["history_length"], address)
 
             if data["name"] in self.directories:
                 user.cwd = self.directories[data["name"]]
